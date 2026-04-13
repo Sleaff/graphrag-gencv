@@ -17,5 +17,5 @@ A Master's Thesis project developing a Graph Retrieval-Augmented Generation (Gra
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/sleaff/graphrag-gencv.git](https://github.com/sleaff/graphrag-gencv.git)
+   git clone https://github.com/sleaff/graphrag-gencv.git
    cd graphrag-gencv
