@@ -1,2 +1,6 @@
 ontologies/
 *__pycache__/
+.env
+tools/
+.venv/
+.ruff_cache/

@@ -1,55 +1,32 @@
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import File, HTTPException, UploadFile
 import os
-import logging
+from loguru import logger
 from docling.document_converter import DocumentConverter
 import tempfile
+from fastapi.responses import FileResponse
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.output import text_from_rendered
 from marker.config.parser import ConfigParser
 
-# python -m spacy download en_core_web_sm
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
-
-app = FastAPI()
-
-logger.info("Initializing AI Models (Docling & spaCy)...")
+logger.info("Initializing Extraction Module (Docling)...")
 try:
-    converter = DocumentConverter() 
-    
+    converter = DocumentConverter()
+
 except Exception as e:
     logger.error(f"Failed to load models: {e}")
     raise
+
 
 def run_conversion(temp_path: str):
     """Sync wrapper for Docling to be run in a thread pool."""
     result = converter.convert(temp_path)
     return result.document.export_to_markdown()
 
-def simple_sentence_tokenizer(text: str):
-    text = ' '.join(text.split())
-    parts = text.split('. ')
-    
-    sentences = []
-    for i, part in enumerate(parts):
-        if part.strip():
-            if i < len(parts) - 1:
-                sentences.append(part + '.')
-            else:
-                sentences.append(part if part.endswith('.') else part)
-    
-    return sentences
 
-@app.post("/v1/extract-sentences-marker")
 async def send_message_marker(pdf_file: UploadFile = File(...)):
     try:
-        if not pdf_file.filename.endswith('.pdf'):
+        if not pdf_file.filename.endswith(".pdf"):
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
         logger.info(f"Processing uploaded file: {pdf_file.filename}")
@@ -58,10 +35,7 @@ async def send_message_marker(pdf_file: UploadFile = File(...)):
             temp_pdf.write(content)
             temp_pdf_path = temp_pdf.name
 
-            config = {
-                "output_format": "json",
-                "force_ocr": True
-            }
+            config = {"output_format": "json", "force_ocr": True}
             config_parser = ConfigParser(config)
 
             converter = PdfConverter(
@@ -72,9 +46,11 @@ async def send_message_marker(pdf_file: UploadFile = File(...)):
             print(rendered)
             text, _, images = text_from_rendered(rendered)
             print(text)
-        
-            logger.info(f"PDF converted to sentences successfully: {len(text)} sentences extracted")
-        
+
+            logger.info(
+                f"PDF converted to sentences successfully: {len(text)} sentences extracted"
+            )
+
             os.unlink(temp_pdf_path)
 
             return {"text": text}
@@ -85,11 +61,12 @@ async def send_message_marker(pdf_file: UploadFile = File(...)):
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Uses Docling and SpaCy
-@app.post("/v1/extract-sentences-docling")
-async def send_message_docling(pdf_file: UploadFile = File(...)):
+
+async def extract_text(pdf_file: UploadFile = File(...)):
+    # TODO: Add support for other file types in the future, but for now only PDF is supported.
+    """Only PDF files are supported."""
     try:
-        if not pdf_file.filename.endswith('.pdf'):
+        if not pdf_file.filename.endswith(".pdf"):
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
         logger.info(f"Processing uploaded file: {pdf_file.filename}")
@@ -97,29 +74,29 @@ async def send_message_docling(pdf_file: UploadFile = File(...)):
             content = await pdf_file.read()
             temp_pdf.write(content)
             temp_pdf_path = temp_pdf.name
-        
+
         converter = DocumentConverter()
         doc = converter.convert(temp_pdf_path).document
 
         text = doc.export_to_markdown()
-        logger.info(f"PDF converted to markdown successfully with Docling")
-        
-        logger.info(f"PDF converted to sentences successfully: {len(text)} sentences extracted")
-        logger.info(f"All sentences extracted: \n{text}")
+        logger.info("PDF converted to markdown successfully with Docling")
+        logger.info(
+            f"PDF converted to sentences successfully: {len(text)} sentences extracted"
+        )
 
         os.unlink(temp_pdf_path)
-        
-        return {"text": text}
-    
 
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".md") as temp_md:
+            temp_md.write(text.encode("utf-8"))
+            temp_md_path = temp_md.name
+
+        logger.info(f"Markdown file created at: {temp_md_path}")
+        return FileResponse(
+            path=temp_md_path, media_type="text/markdown", filename="extracted_text.md"
+        )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-    
-
-
