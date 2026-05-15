@@ -20,7 +20,6 @@ def get_llm_client() -> openai.OpenAI:
 def call_llm(messages: list[ChatMessage]) -> str:
     """Calls the configured LLM provider with the given messages and returns the response content."""
     client = get_llm_client()
-
     try:
         completion = client.chat.completions.create(
             model=LLM_MODEL,
