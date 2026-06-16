@@ -84,16 +84,18 @@ async def extract_text(pdf_file: UploadFile = File(...)):
             f"PDF converted to sentences successfully: {len(text)} sentences extracted"
         )
 
-        os.unlink(temp_pdf_path)
+        return {"text": text}
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".md") as temp_md:
-            temp_md.write(text.encode("utf-8"))
-            temp_md_path = temp_md.name
+        # os.unlink(temp_pdf_path)
 
-        logger.info(f"Markdown file created at: {temp_md_path}")
-        return FileResponse(
-            path=temp_md_path, media_type="text/markdown", filename="extracted_text.md"
-        )
+        # with tempfile.NamedTemporaryFile(delete=False, suffix=".md") as temp_md:
+        #     temp_md.write(text.encode("utf-8"))
+        #     temp_md_path = temp_md.name
+
+        # logger.info(f"Markdown file created at: {temp_md_path}")
+        # return FileResponse(
+        #     path=temp_md_path, media_type="text/markdown", filename="extracted_text.md"
+        # )
 
     except HTTPException:
         raise

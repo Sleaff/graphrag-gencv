@@ -24,6 +24,7 @@ def call_llm(messages: list[ChatMessage]) -> str:
         completion = client.chat.completions.create(
             model=LLM_MODEL,
             messages=[message.model_dump() for message in messages],
+            response_format={"type": "json_object"} 
         )
     except openai.AuthenticationError as exc:
         raise HTTPException(
