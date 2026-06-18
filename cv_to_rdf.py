@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from generate_rdf import create_rdf_graph, upload_to_graphdb
 from llm_service import call_llm, ChatMessage
+from vector_service import generate_and_store_embedding
 import json
 
 # --- 1. ESCO Mapping Bridge ---
@@ -24,7 +25,8 @@ class Job(BaseModel):
     job_title: str = Field(description="The role, e.g., Software Developer")
     start_date: str
     end_date: Optional[str]
-    raw_skills: List[str] = Field(description="Explicit skills, tools, or frameworks mentioned.")
+    raw_skills: List[str]
+    description: str = Field(description="Narrative description of responsibilities and achievements.")
 
 class Education(BaseModel):
     degree: str
@@ -32,6 +34,7 @@ class Education(BaseModel):
     start_date: str
     end_date: str
     field_of_study: str
+    description: str = Field(description="Description of coursework, thesis, or projects.")
 
 class Language(BaseModel):
     name: str
@@ -60,6 +63,7 @@ class Publication(BaseModel):
     title: str
     publisher: str
     date: str
+    description: str = Field(description="Abstract or summary of the publication.")
 
 class Reference(BaseModel):
     name: str
@@ -78,6 +82,7 @@ class CandidateProfile(BaseModel):
     honors: List[HonorAward]
     publications: List[Publication]
     references: List[Reference]
+
 # --- 3. Main Pipeline ---
 async def map_cv_to_rdf(cv_markdown: str) -> str:
     """Passes the entire markdown to the LLM for strict Pydantic extraction."""
@@ -89,15 +94,15 @@ async def map_cv_to_rdf(cv_markdown: str) -> str:
 Return ONLY a valid JSON object matching this schema:
 {
     "name": "full name",
-    "experiences": [{"company_name": "...", "job_title": "...", "start_date": "...", "end_date": "...", "raw_skills": ["..."]}],
-    "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "..."}],
+    "experiences": [{"company_name": "...", "job_title": "...", "start_date": "...", "end_date": "...", "raw_skills": ["..."], "description": "..."}],
+    "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],
     "technical_skills": ["skill1", "skill2"],
     "languages": [{"name": "...", "proficiency": "..."}],
     "target": {"job_title": "...", "job_mode": "...", "relocate": true, "travel": true},
     "address": {"city": "...", "country": "..."},
     "websites": [{"url": "...", "website_type": "..."}],
     "honors": [{"title": "...", "issuer": "...", "date": "..."}],
-    "publications": [{"title": "...", "publisher": "...", "date": "..."}],
+    "publications": [{"title": "...", "publisher": "...", "date": "...", "description": "..."}],
     "references": [{"name": "...", "relation": "..."}]
 }"""
         ),
@@ -121,35 +126,44 @@ Return ONLY a valid JSON object matching this schema:
         raise ValueError(f"Failed to parse LLM response into CandidateProfile: {e}") from e
     
     # Transform the Pydantic object back into the dictionary format your generate_rdf.py expects
+    candidate_slug = candidate_data.name.replace(" ", "_").lower()
     data_dict = {
         "name": candidate_data.name,
         "experiences": [],
-        "education": [e.model_dump() for e in candidate_data.education],
+        "education": [],
+        "publications": [],
         "technical_skills": candidate_data.technical_skills,
         "languages": [l.model_dump() for l in candidate_data.languages],
         "target": candidate_data.target.model_dump(),
         "address": candidate_data.address.model_dump() if candidate_data.address else None,
         "websites": [w.model_dump() for w in candidate_data.websites],
         "honors": [h.model_dump() for h in candidate_data.honors],
-        "publications": [p.model_dump() for p in candidate_data.publications],
         "references": [r.model_dump() for r in candidate_data.references]
     }
 
-    for job in candidate_data.experiences:
-        esco_uris = []
-        # Pass the extracted raw skills through the mock ESCO database
-        for raw_skill in job.raw_skills:
-            uri = map_to_esco_uri(raw_skill)
-            if uri:
-                esco_uris.append(uri)
-                
-        data_dict["experiences"].append({
-            "company_name": job.company_name,
-            "job_title": job.job_title,
-            "start_date": job.start_date,
-            "end_date": job.end_date if job.end_date else "",
-            "esco_skill_uris": esco_uris # Mapped ESCO URIs
-        })
+    # --- VECTOR & ESCO MAPPING FOR JOBS ---
+    for idx, job in enumerate(candidate_data.experiences):
+        esco_uris = [map_to_esco_uri(s) for s in job.raw_skills if map_to_esco_uri(s)]
+        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.description)
+        
+        job_dict = job.model_dump()
+        job_dict["esco_skill_uris"] = esco_uris
+        job_dict["vector_id"] = vector_id
+        data_dict["experiences"].append(job_dict)
+
+    # --- VECTOR MAPPING FOR EDUCATION ---
+    for idx, edu in enumerate(candidate_data.education):
+        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.description)
+        edu_dict = edu.model_dump()
+        edu_dict["vector_id"] = vector_id
+        data_dict["education"].append(edu_dict)
+        
+    # --- VECTOR MAPPING FOR PUBLICATIONS ---
+    for idx, pub in enumerate(candidate_data.publications):
+        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.description)
+        pub_dict = pub.model_dump()
+        pub_dict["vector_id"] = vector_id
+        data_dict["publications"].append(pub_dict)
 
     # Generate and Upload!
     graph = create_rdf_graph(data_dict)

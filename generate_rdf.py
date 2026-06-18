@@ -44,6 +44,15 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((work_uri, MY0.employedIn, company_uri))
         g.add((company_uri, RDF.type, MY0.Company))
         g.add((company_uri, MY0.orgName, Literal(job.get("company_name", ""), datatype=XSD.string)))
+        
+        # --- Link Vector Database Reference ---
+        if job.get("vector_id"):
+            g.add((work_uri, MY0.hasVectorReference, Literal(job["vector_id"], datatype=XSD.string)))
+
+        # --- Link ESCO Skills Directly to This Job ---
+        for esco_uri_str in job.get("esco_skill_uris", []):
+            esco_skill_uri = URIRef(esco_uri_str)
+            g.add((work_uri, MY0.developedSkill, esco_skill_uri))
 
     # --- Education ---
     for idx, edu in enumerate(candidate_data.get("education", [])):
@@ -58,6 +67,15 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((edu_uri, MY0.studiedIn, org_uri))
         g.add((org_uri, RDF.type, MY0.EducationalOrg))
         g.add((org_uri, MY0.orgName, Literal(edu.get("institution", ""), datatype=XSD.string)))
+
+        # --- Link Vector Database Reference ---
+        if edu.get("vector_id"):
+            g.add((edu_uri, MY0.hasVectorReference, Literal(edu["vector_id"], datatype=XSD.string)))
+
+        # --- Link ESCO Skills Directly to This Education ---
+        for esco_uri_str in edu.get("esco_skill_uris", []):
+            esco_skill_uri = URIRef(esco_uri_str)
+            g.add((edu_uri, MY0.developedSkill, esco_skill_uri))
 
     # --- Technical Skills ---
     for idx, skill_name in enumerate(candidate_data.get("technical_skills", [])):
@@ -115,6 +133,10 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((pub_uri, RDF.type, MY0.Publication))
         g.add((pub_uri, MY0.pubTitle, Literal(pub.get("title", ""))))
         g.add((pub_uri, MY0.pubDate, Literal(pub.get("date", ""))))
+        
+        # --- Link Vector Database Reference ---
+        if pub.get("vector_id"):
+            g.add((pub_uri, MY0.hasVectorReference, Literal(pub["vector_id"], datatype=XSD.string)))
 
     # --- References ---
     for idx, ref in enumerate(candidate_data.get("references", [])):

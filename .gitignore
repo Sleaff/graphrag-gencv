@@ -1,6 +1,15 @@
+# Project Specific
 ontologies/
-*__pycache__/
-.env
 tools/
+vector_data/
+
+# Python
+*__pycache__/
+*.py[cod]
 .venv/
+.env
 .ruff_cache/
+
+# OS & Editor
+.DS_Store
+.vscode/

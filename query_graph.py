@@ -12,8 +12,7 @@ def get_candidate_profile(candidate_name: str):
     PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     
-    SELECT ?jobTitle ?companyName ?startDate ?endDate ?skillName ?degree ?institution ?langName ?eduStart ?eduGrad ?targetJobTitle ?targetConditionWillRelocate ?targetConditionWillTravel
-    WHERE {{
+    SELECT ?jobTitle ?companyName ?startDate ?endDate ?skillName ?degree ?institution ?langName ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
         ?cv a my0:CV ;
             my0:aboutPerson ?person .
         ?person my0:firstName "{candidate_name}" .
@@ -108,13 +107,12 @@ def get_candidate_profile(candidate_name: str):
         "target": None,
         "address": None,
         "websites": {},
-        "references": [],
         "honors": [],
-        "references": []
+        "publications": [],
+        "references": [],
     }
     
     for row in results["results"]["bindings"]:
-        # 1. Map Work History
         if "jobTitle" in row:
             job_key = row["jobTitle"]["value"] + row["companyName"]["value"]
             profile["jobs"][job_key] = {
@@ -124,7 +122,6 @@ def get_candidate_profile(candidate_name: str):
                 "end": row.get("endDate", {}).get("value", "Present")
             }
         
-        # 2. Map Education
         if "degree" in row:
             edu_key = row["degree"]["value"] + row["institution"]["value"]
             profile["education"][edu_key] = {
@@ -134,15 +131,12 @@ def get_candidate_profile(candidate_name: str):
                 "end_date": row.get("eduGrad", {}).get("value", "N/A")
             }
             
-        # 3. Map Skills
         if "skillName" in row:
             profile["skills"].add(row["skillName"]["value"])
             
-        # 4. Map Languages
         if "langName" in row:
             profile["languages"].add(row["langName"]["value"])
 
-        # 5. Map Target (Only needs to be set once)
         if "targetTitle" in row and profile["target"] is None:
             profile["target"] = {
                 "job_title": row["targetTitle"]["value"],
@@ -150,14 +144,12 @@ def get_candidate_profile(candidate_name: str):
                 "travel": row["travel"]["value"].lower() == "true"
             }
 
-        # 6. Map Address
         if "city" in row:
             profile["address"] = {
                 "city": row["city"]["value"],
                 "country": row["country"]["value"]
             }
 
-        # 7. Map Websites
         if "url" in row:
             site_key = row["url"]["value"]
             profile["websites"][site_key] = {
@@ -165,7 +157,6 @@ def get_candidate_profile(candidate_name: str):
                 "website_type": row["type"]["value"]
             }
             
-        # Map Honors
         if "hTitle" in row:
             profile["honors"].append({
                 "title": row["hTitle"]["value"],
@@ -173,13 +164,12 @@ def get_candidate_profile(candidate_name: str):
                 "date": row["hDate"]["value"]
             })
         
-        # Map Publications
         if "pTitle" in row:
             profile["publications"].append({
                 "title": row["pTitle"]["value"],
                 "date": row["pDate"]["value"]
             })
-
+        
         if "refName" in row:
             profile["references"].append({
                 "name": row["refName"]["value"],

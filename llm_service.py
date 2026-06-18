@@ -1,7 +1,7 @@
 import openai
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
-from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, EMBEDDING_MODEL
 
 
 class ChatMessage(BaseModel):
@@ -44,3 +44,18 @@ def call_llm(messages: list[ChatMessage]) -> str:
         )
 
     return message.content
+
+def call_embedding(text: str) -> list[float]:
+    """Generates embeddings for the given text using the configured LLM provider."""
+    client = get_llm_client()
+    try:
+        response = client.embeddings.create(
+            model=EMBEDDING_MODEL,
+            input=text
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Embedding generation failed: {str(e)}"
+        ) from e
