@@ -37,13 +37,47 @@ class Language(BaseModel):
     name: str
     proficiency: str
 
+class Target(BaseModel):
+    job_title: str = Field(description="The job title the candidate is seeking.")
+    job_mode: str = Field(description="e.g., Full-time, Part-time.")
+    relocate: bool = Field(description="Is the candidate willing to relocate?")
+    travel: bool = Field(description="Is the candidate willing to travel?")
+
+class Address(BaseModel):
+    city: str
+    country: str
+
+class Website(BaseModel):
+    url: str
+    website_type: str
+
+class HonorAward(BaseModel):
+    title: str
+    issuer: str
+    date: str
+
+class Publication(BaseModel):
+    title: str
+    publisher: str
+    date: str
+
+class Reference(BaseModel):
+    name: str
+    relation: str  # e.g., "Professional" or "Personal"
+    description: str = "Available upon request" # Defaulting for privacy
+
 class CandidateProfile(BaseModel):
     name: str
     experiences: List[Job]
     education: List[Education]
     technical_skills: List[str]
     languages: List[Language]
-
+    target: Target
+    address: Address
+    websites: List[Website]
+    honors: List[HonorAward]
+    publications: List[Publication]
+    references: List[Reference]
 # --- 3. Main Pipeline ---
 async def map_cv_to_rdf(cv_markdown: str) -> str:
     """Passes the entire markdown to the LLM for strict Pydantic extraction."""
@@ -58,7 +92,13 @@ Return ONLY a valid JSON object matching this schema:
     "experiences": [{"company_name": "...", "job_title": "...", "start_date": "...", "end_date": "...", "raw_skills": ["..."]}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "..."}],
     "technical_skills": ["skill1", "skill2"],
-    "languages": [{"name": "...", "proficiency": "..."}]
+    "languages": [{"name": "...", "proficiency": "..."}],
+    "target": {"job_title": "...", "job_mode": "...", "relocate": true, "travel": true},
+    "address": {"city": "...", "country": "..."},
+    "websites": [{"url": "...", "website_type": "..."}],
+    "honors": [{"title": "...", "issuer": "...", "date": "..."}],
+    "publications": [{"title": "...", "publisher": "...", "date": "..."}],
+    "references": [{"name": "...", "relation": "..."}]
 }"""
         ),
         ChatMessage(role="user", content=cv_markdown),
@@ -86,7 +126,13 @@ Return ONLY a valid JSON object matching this schema:
         "experiences": [],
         "education": [e.model_dump() for e in candidate_data.education],
         "technical_skills": candidate_data.technical_skills,
-        "languages": [l.model_dump() for l in candidate_data.languages]
+        "languages": [l.model_dump() for l in candidate_data.languages],
+        "target": candidate_data.target.model_dump(),
+        "address": candidate_data.address.model_dump() if candidate_data.address else None,
+        "websites": [w.model_dump() for w in candidate_data.websites],
+        "honors": [h.model_dump() for h in candidate_data.honors],
+        "publications": [p.model_dump() for p in candidate_data.publications],
+        "references": [r.model_dump() for r in candidate_data.references]
     }
 
     for job in candidate_data.experiences:

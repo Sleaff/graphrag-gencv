@@ -72,6 +72,57 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((person_uri, MY0.hasSkill, lang_uri))
         g.add((lang_uri, RDF.type, MY0.LanguageSkill))
         g.add((lang_uri, MY0.skillName, Literal(lang.get("name", ""), datatype=XSD.string)))
+
+    # --- Target Career Preferences ---
+    if candidate_data.target:
+        target_uri = URIRef(f"http://example.com/data/target_{candidate_slug}")
+        g.add((cv_uri, MY0.hasTarget, target_uri))
+        g.add((target_uri, RDF.type, MY0.Target))
+        g.add((target_uri, MY0.targetJobTitle, Literal(candidate_data.target.job_title, datatype=XSD.string)))
+        g.add((target_uri, MY0.targetConditionWillRelocate, Literal(candidate_data.target.relocate, datatype=XSD.boolean)))
+        g.add((target_uri, MY0.targetConditionWillTravel, Literal(candidate_data.target.travel, datatype=XSD.boolean)))
+    
+    # --- Address ---
+    if candidate_data.get("address"):
+        addr = candidate_data["address"]
+        addr_uri = URIRef(f"http://example.com/data/addr_{candidate_slug}")
+        g.add((person_uri, MY0.hasAddress, addr_uri))
+        g.add((addr_uri, RDF.type, MY0.Address))
+        g.add((addr_uri, MY0.city, Literal(addr.get("city", ""))))
+        g.add((addr_uri, MY0.country, Literal(addr.get("country", ""))))
+
+    # --- Websites ---
+    for idx, site in enumerate(candidate_data.get("websites", [])):
+        site_uri = URIRef(f"http://example.com/data/site_{candidate_slug}_{idx}")
+        g.add((cv_uri, MY0.hasWebsite, site_uri))
+        g.add((site_uri, RDF.type, MY0.Website))
+        g.add((site_uri, MY0.websiteURL, Literal(site.get("url", ""))))
+        g.add((site_uri, MY0.websiteType, Literal(site.get("website_type", ""))))
+
+    # --- Honors/Awards ---
+    for idx, honor in enumerate(candidate_data.get("honors", [])):
+        honor_uri = URIRef(f"http://example.com/data/honor_{candidate_slug}_{idx}")
+        g.add((cv_uri, MY0.hasHonorAward, honor_uri))
+        g.add((honor_uri, RDF.type, MY0.HonorAward))
+        g.add((honor_uri, MY0.honorTitle, Literal(honor.get("title", ""))))
+        g.add((honor_uri, MY0.honorIssuer, Literal(honor.get("issuer", ""))))
+        g.add((honor_uri, MY0.honorDate, Literal(honor.get("date", ""))))
+
+    # --- Publications ---
+    for idx, pub in enumerate(candidate_data.get("publications", [])):
+        pub_uri = URIRef(f"http://example.com/data/pub_{candidate_slug}_{idx}")
+        g.add((cv_uri, MY0.hasPublication, pub_uri))
+        g.add((pub_uri, RDF.type, MY0.Publication))
+        g.add((pub_uri, MY0.pubTitle, Literal(pub.get("title", ""))))
+        g.add((pub_uri, MY0.pubDate, Literal(pub.get("date", ""))))
+
+    # --- References ---
+    for idx, ref in enumerate(candidate_data.get("references", [])):
+        ref_uri = URIRef(f"http://example.com/data/ref_{candidate_slug}_{idx}")
+        g.add((cv_uri, MY0.hasReference, ref_uri))
+        g.add((ref_uri, RDF.type, MY0.Reference))
+        g.add((ref_uri, MY0.referenceName, Literal(ref.get("name", ""))))
+        g.add((ref_uri, MY0.referenceRelation, Literal(ref.get("relation", ""))))
             
     return g
 
