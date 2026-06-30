@@ -12,7 +12,7 @@ def generate_and_store_embedding(candidate_slug: str, job_idx: str, description:
         description = "No description provided."
         
     logger.debug(f"Generating embedding for {candidate_slug} ({job_idx})...")
-    embedding = call_embedding(model="embed", text=description) 
+    embedding = call_embedding(text=description) 
     doc_id = f"{candidate_slug}_{job_idx}"
     
     collection.upsert(

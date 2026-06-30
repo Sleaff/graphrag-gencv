@@ -6,11 +6,12 @@ from pdf_extractor import extract_text
 from llm_service import call_llm, ChatMessage
 from cv_to_rdf import map_cv_to_rdf
 from generate_cv import generate_tailored_cv
+from pydantic import BaseModel
 
 app = FastAPI(
-    title="Academic CV Generator API",
+    title="CV Generator API",
     version="0.1.0",
-    description="Builds a starter academic CV from Wikidata and simple user preferences.",
+    description="Builds a CV.",
 )
 
 logger.info("Initializing Graphrag GenCV API...")
@@ -48,20 +49,22 @@ async def cv_to_rdf(file: UploadFile) -> str:
 def generate_graphrag_cv(candidate_name: str, job_description: str) -> str:
     return generate_graphrag_cv(candidate_name, job_description)
 
+class CVRequest(BaseModel):
+    candidate_name: str
+    job_description: str
+
 @app.post("/generate-hybrid-cv")
-def generate_hybrid_cv(candidate_name: str, job_description: str) -> str:
+def generate_hybrid_cv(request: CVRequest) -> str:
     """The core thesis pipeline: Vector Recall -> Graph Precision -> LLM Generation"""
     
-    # 1. Retrieval Stage (Hybrid Search)
-    logger.info(f"Running hybrid search for {candidate_name}...")
-    profile_data = hybrid_search(job_description, candidate_name)
+    logger.info(f"Running hybrid search for {request.candidate_name}...")
+    profile_data = hybrid_search(request.job_description, request.candidate_name)
     
-    if "message" in profile_data: # Indicates no semantic matches were found
+    if "message" in profile_data:
         raise HTTPException(status_code=404, detail=profile_data["message"])
         
-    # 2. Generation Stage
     logger.info("Generating tailored CV via LLM...")
-    final_cv = generate_tailored_cv(job_description, profile_data)
+    final_cv = generate_tailored_cv(request.job_description, profile_data)
     
     return final_cv
 

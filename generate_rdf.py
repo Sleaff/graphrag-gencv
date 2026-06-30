@@ -92,17 +92,18 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((lang_uri, MY0.skillName, Literal(lang.get("name", ""), datatype=XSD.string)))
 
     # --- Target Career Preferences ---
-    if candidate_data.target:
+    target_data = candidate_data.get("target")
+    if target_data:
         target_uri = URIRef(f"http://example.com/data/target_{candidate_slug}")
         g.add((cv_uri, MY0.hasTarget, target_uri))
         g.add((target_uri, RDF.type, MY0.Target))
-        g.add((target_uri, MY0.targetJobTitle, Literal(candidate_data.target.job_title, datatype=XSD.string)))
-        g.add((target_uri, MY0.targetConditionWillRelocate, Literal(candidate_data.target.relocate, datatype=XSD.boolean)))
-        g.add((target_uri, MY0.targetConditionWillTravel, Literal(candidate_data.target.travel, datatype=XSD.boolean)))
+        g.add((target_uri, MY0.targetJobTitle, Literal(target_data.get("job_title", ""), datatype=XSD.string)))
+        g.add((target_uri, MY0.targetConditionWillRelocate, Literal(target_data.get("relocate", False), datatype=XSD.boolean)))
+        g.add((target_uri, MY0.targetConditionWillTravel, Literal(target_data.get("travel", False), datatype=XSD.boolean)))
     
     # --- Address ---
-    if candidate_data.get("address"):
-        addr = candidate_data["address"]
+    addr = candidate_data.get("address")
+    if addr:
         addr_uri = URIRef(f"http://example.com/data/addr_{candidate_slug}")
         g.add((person_uri, MY0.hasAddress, addr_uri))
         g.add((addr_uri, RDF.type, MY0.Address))

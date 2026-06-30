@@ -8,14 +8,23 @@ def hybrid_search(job_description: str, candidate_name: str):
     """Orchestrates the semantic search and filters the result via GraphDB."""
     logger.info(f"Starting hybrid search for '{candidate_name}'...")
     
+    # --- NEW: Truncate to avoid ContextWindowExceededError ---
+    # 350 words is safely under the 512 token limit for most tokenizers
+    safe_job_description = " ".join(job_description.split()[:250])
+    logger.debug(f"Truncated job description to {len(safe_job_description.split())} words for embedding.")
+    
     # 1. Semantic Step
     logger.debug("Generating embedding for job description...")
-    query_embedding = call_embedding(model="embed", text=job_description)
+    query_embedding = call_embedding(text=safe_job_description) # Pass the safe version
     
     logger.debug("Querying ChromaDB for semantic matches...")
     results = collection.query(query_embeddings=[query_embedding], n_results=5)
-    candidate_doc_ids = results["ids"][0]
     
+    if not results["ids"] or not results["ids"][0]:
+        logger.warning("No semantic matches found in ChromaDB.")
+        return {"message": "No semantic matches found."}
+        
+    candidate_doc_ids = results["ids"][0]
     logger.info(f"Found {len(candidate_doc_ids)} semantic matches: {candidate_doc_ids}")
     
     # 2. Graph Step

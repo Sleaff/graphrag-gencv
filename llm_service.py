@@ -1,5 +1,6 @@
 import openai
 from fastapi import HTTPException
+from loguru import logger
 from pydantic import BaseModel, Field
 from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, EMBEDDING_MODEL
 
@@ -55,6 +56,7 @@ def call_embedding(text: str) -> list[float]:
         )
         return response.data[0].embedding
     except Exception as e:
+        logger.error(f"Embedding API Error: {str(e)}")
         raise HTTPException(
             status_code=502,
             detail=f"Embedding generation failed: {str(e)}"
