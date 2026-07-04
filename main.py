@@ -1,17 +1,34 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException, UploadFile
+import subprocess
+import os
+import uuid
+from fastapi import FastAPI, HTTPException, UploadFile, BackgroundTasks
+from fastapi.responses import FileResponse, PlainTextResponse
 from loguru import logger
+from designs.texDesign import generateDesign1, generateDesign2, generateDesign3
 from hybrid_search import hybrid_search
 from pdf_extractor import extract_text
 from llm_service import call_llm, ChatMessage
 from cv_to_rdf import map_cv_to_rdf
 from generate_cv import generate_tailored_cv
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from cv_to_rdf import CandidateProfile, generate_rdf_and_vectors
+from pdf_service import generate_and_save_pdf
+from query_graph import get_candidate_profile
 
 app = FastAPI(
     title="CV Generator API",
     version="0.1.0",
     description="Builds a CV.",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 logger.info("Initializing Graphrag GenCV API...")
@@ -37,17 +54,26 @@ def chat(system_instruction: str, user_prompt: str) -> str:
     return call_llm(messages)
 
 @app.post("/cv-to-rdf")
-async def cv_to_rdf(file: UploadFile) -> str:
+async def cv_to_rdf(file: UploadFile) -> dict:
     """Endpoint to convert a Markdown CV into RDF Turtle format using the LLM."""
-    extraction_result = await extract_text(file)
-    cv_markdown = extraction_result["text"]
-    result = await map_cv_to_rdf(cv_markdown)
-    logger.info(result)
-    return result
+    try:
+        extraction_result = await extract_text(file)
+        cv_markdown = extraction_result["text"]
+        logger.info(cv_markdown)
+        result = await map_cv_to_rdf(cv_markdown)
+        logger.info(result)
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Error occurred while converting CV to RDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate-graphrag-cv")
 def generate_graphrag_cv(candidate_name: str, job_description: str) -> str:
-    return generate_graphrag_cv(candidate_name, job_description)
+    profile_data = get_candidate_profile(candidate_name)
+
+    final_cv = generate_tailored_cv(job_description, profile_data)
+
+    return final_cv
 
 class CVRequest(BaseModel):
     candidate_name: str
@@ -68,5 +94,121 @@ def generate_hybrid_cv(request: CVRequest) -> str:
     
     return final_cv
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.post("/ingest-structured-profile")
+async def ingest_structured_profile(profile: CandidateProfile):
+    """Bypasses the LLM and ingests a perfectly structured profile directly."""
+    logger.info(f"Received manual profile entry for {profile.name}")
+    try:
+        rdf_output = await generate_rdf_and_vectors(profile)
+        logger.info(rdf_output)
+        
+        return {
+            "status": "success", 
+            "message": f"Successfully saved {profile.name} to GraphDB and ChromaDB."
+        }
+    except Exception as e:
+        logger.error(f"Manual ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/download-pdf/{design_id}")
+async def download_pdf(design_id: int, profile: CandidateProfile):
+    pdf_path = generate_and_save_pdf(profile, design_id)
+    return FileResponse(pdf_path, media_type='application/pdf', filename="cv.pdf")
+
+class LatexRequest(BaseModel):
+    latex: str
+
+def cleanup_files(*filenames):
+    """Helper function to delete temporary files."""
+    for f in filenames:
+        if os.path.exists(f):
+            os.remove(f)
+
+@app.post("/compile-latex")
+async def compile_latex(request_data: LatexRequest, background_tasks: BackgroundTasks):
+    # Generate unique filenames to prevent collisions if multiple users generate at once
+    unique_id = str(uuid.uuid4())
+    tex_filename = f"cv_{unique_id}.tex"
+    pdf_filename = f"cv_{unique_id}.pdf"
+    
+    try:
+        with open(tex_filename, "w", encoding="utf-8") as f:
+            f.write(request_data.latex)
+            
+        subprocess.run(["tectonic", "-Z", "shell-escape", tex_filename], check=True)
+        
+        if not os.path.exists(pdf_filename):
+            raise FileNotFoundError("PDF was not generated.")
+            
+        background_tasks.add_task(cleanup_files, tex_filename, pdf_filename)
+        
+        return FileResponse(pdf_filename, media_type='application/pdf', filename="cv.pdf")
+        
+    except subprocess.CalledProcessError as e:
+        cleanup_files(tex_filename)
+        raise HTTPException(status_code=500, detail=f"LaTeX compilation failed. Check LaTeX syntax.")
+    except Exception as e:
+        cleanup_files(tex_filename, pdf_filename)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-latex/{design_id}", response_class=PlainTextResponse)
+async def generate_latex(design_id: int, profile: CandidateProfile, language: str = "en"):
+    try:
+        if design_id == 1:
+            latex_code = generateDesign1(profile, language)
+        elif design_id == 2:
+            latex_code = generateDesign2(profile, language)
+        else:
+            latex_code = generateDesign3(profile, language)
+            
+        return latex_code
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/list-candidates")
+async def list_candidates():
+    """Returns a list of all candidate names from the database."""
+    # TODO: Replace with your actual DB query (e.g., query GraphDB for all person nodes)
+    # Mock data for testing:
+    return ["Kenneth Plum Toft", "Jane Doe"]
+
+
+
+@app.get("/get-profile/{candidate_name}")
+async def get_profile(candidate_name: str):
+    """Retrieves a full candidate profile from the database."""
+    profile_data = get_candidate_profile(candidate_name)
+    logger.info(f"Retrieved profile for {candidate_name}: {profile_data}")
+    return profile_data
+
+
+@app.get("/get-profile-test/{candidate_name}")
+async def get_profile_test(candidate_name: str):
+    """Retrieves a full candidate profile from the database."""
+    return {
+        "name": candidate_name,
+        "city": "Copenhagen", "country": "Denmark",
+        "technical_skills": [{"name": "Python"}, {"name": "GraphRAG"}],
+        "languages": [{"name": "English", "proficiency": "Fluent"}],
+        "experiences": [{
+            "company_name": "Dictus ApS", 
+            "job_title": "Software Developer", 
+            "start_date": "2024", 
+            "end_date": "2026", 
+            "raw_skills": "Python, ASR", 
+            "description": "Developed ASR system."
+        }],
+        "education": [{
+            "degree": "MSc Computer Science", 
+            "institution": "DTU", 
+            "start_date": "2024", 
+            "end_date": "2026", 
+            "field_of_study": "AI", 
+            "description": "Specializing in AI and Algorithms."
+        }],
+        "publications": [],
+        "websites": [],
+        "honors": [],
+        "references": []
+    }

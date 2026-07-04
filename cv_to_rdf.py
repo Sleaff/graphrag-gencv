@@ -42,9 +42,9 @@ class Language(BaseModel):
 
 class Target(BaseModel):
     job_title: str = Field(description="The job title the candidate is seeking.")
-    job_mode: str = Field(description="e.g., Full-time, Part-time.")
-    relocate: bool = Field(description="Is the candidate willing to relocate?")
-    travel: bool = Field(description="Is the candidate willing to travel?")
+    job_mode: Optional[str] = Field(description="e.g., Full-time, Part-time.")
+    relocate: Optional[bool] = Field(description="Is the candidate willing to relocate?")
+    travel: Optional[bool] = Field(description="Is the candidate willing to travel?")
 
 class Address(BaseModel):
     city: str
@@ -127,6 +127,55 @@ Return ONLY a valid JSON object matching this schema:
     
     # Transform the Pydantic object back into the dictionary format your generate_rdf.py expects
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
+    data_dict = {
+        "name": candidate_data.name,
+        "experiences": [],
+        "education": [],
+        "publications": [],
+        "technical_skills": candidate_data.technical_skills,
+        "languages": [l.model_dump() for l in candidate_data.languages],
+        "target": candidate_data.target.model_dump(),
+        "address": candidate_data.address.model_dump() if candidate_data.address else None,
+        "websites": [w.model_dump() for w in candidate_data.websites],
+        "honors": [h.model_dump() for h in candidate_data.honors],
+        "references": [r.model_dump() for r in candidate_data.references]
+    }
+
+    # --- VECTOR & ESCO MAPPING FOR JOBS ---
+    for idx, job in enumerate(candidate_data.experiences):
+        esco_uris = [map_to_esco_uri(s) for s in job.raw_skills if map_to_esco_uri(s)]
+        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.description)
+        
+        job_dict = job.model_dump()
+        job_dict["esco_skill_uris"] = esco_uris
+        job_dict["vector_id"] = vector_id
+        data_dict["experiences"].append(job_dict)
+
+    # --- VECTOR MAPPING FOR EDUCATION ---
+    for idx, edu in enumerate(candidate_data.education):
+        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.description)
+        edu_dict = edu.model_dump()
+        edu_dict["vector_id"] = vector_id
+        data_dict["education"].append(edu_dict)
+        
+    # --- VECTOR MAPPING FOR PUBLICATIONS ---
+    for idx, pub in enumerate(candidate_data.publications):
+        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.description)
+        pub_dict = pub.model_dump()
+        pub_dict["vector_id"] = vector_id
+        data_dict["publications"].append(pub_dict)
+
+    # Generate and Upload!
+    graph = create_rdf_graph(data_dict)
+    upload_to_graphdb(graph)
+    
+    return graph.serialize(format="turtle")
+
+async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
+    """Takes a strictly structured Pydantic model and inserts it into ChromaDB and GraphDB."""
+    
+    candidate_slug = candidate_data.name.replace(" ", "_").lower()
+    
     data_dict = {
         "name": candidate_data.name,
         "experiences": [],
