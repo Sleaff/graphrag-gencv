@@ -19,7 +19,7 @@ export default function Home() {
     city: '', country: '',
     technical_skills: [{ name: '' }],
     languages: [{ name: '', proficiency: '' }],
-    experiences: [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '' }],
+    experiences: [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '', career_level: '', job_type: '' }],
     education: [{ degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' }],
     publications: [{ title: '', publisher: '', date: '', description: '' }],
     websites: [{ url: '', website_type: '' }],
@@ -27,7 +27,6 @@ export default function Home() {
     references: [{ name: '', relation: '' }]
   });
 
-  // Fetch candidates on load
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
@@ -52,20 +51,58 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to load profile");
       const data = await response.json();
       
-      // Ensure arrays have at least one empty object so the UI forms don't break
       setProfileData({
-        city: data.city || '',
-        country: data.country || '',
-        technical_skills: data.technical_skills?.length ? data.technical_skills : [{ name: '' }],
-        languages: data.languages?.length ? data.languages : [{ name: '', proficiency: '' }],
-        experiences: data.experiences?.length ? data.experiences : [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '' }],
-        education: data.education?.length ? data.education : [{ degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' }],
-        publications: data.publications?.length ? data.publications : [{ title: '', publisher: '', date: '', description: '' }],
-        websites: data.websites?.length ? data.websites : [{ url: '', website_type: '' }],
+        city: data.address?.city || '',
+        country: data.address?.country || '',
+        technical_skills: data.skills?.length 
+          ? data.skills.map((s: string) => ({ name: s })) 
+          : [{ name: '' }],
+        languages: data.languages?.length 
+          ? data.languages.map((l: string) => ({ name: l, proficiency: '' })) 
+          : [{ name: '', proficiency: '' }],
+        experiences: data.jobs && Object.keys(data.jobs).length 
+          ? Object.values(data.jobs).map((job: any) => ({
+              company_name: job.company || '', 
+              job_title: job.title || '', 
+              start_date: job.start || '', 
+              end_date: job.end || '', 
+              career_level: job.career_level || '',
+              job_type: job.job_type || '',
+              raw_skills: '', 
+              description: ''
+            })) 
+          : [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '', career_level: '', job_type: '' }],
+        education: data.education && Object.keys(data.education).length 
+          ? Object.values(data.education).map((edu: any) => ({
+              degree: edu.degree || '', 
+              institution: edu.institution || '', 
+              start_date: edu.start_date || '', 
+              end_date: edu.end_date || '', 
+              field_of_study: '', 
+              description: ''
+            })) 
+          : [{ degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' }],
+        publications: data.publications?.length 
+          ? data.publications.map((pub: any) => ({
+              title: pub.title || '', 
+              publisher: '', 
+              date: pub.date || '', 
+              description: ''
+            })) 
+          : [{ title: '', publisher: '', date: '', description: '' }],
+        websites: data.websites && Object.keys(data.websites).length 
+          ? Object.values(data.websites) 
+          : [{ url: '', website_type: '' }],
         honors: data.honors?.length ? data.honors : [{ title: '', issuer: '', date: '' }],
         references: data.references?.length ? data.references : [{ name: '', relation: '' }]
       });
-      setCandidateName(data.name);
+
+      setCandidateName(data.name || name);
+      
+      if (data.target?.job_title) {
+        setJobDescription(data.target.job_title);
+      }
+
     } catch (err: any) {
       setError(`Could not load profile: ${err.message}`);
     } finally {
@@ -197,7 +234,6 @@ export default function Home() {
            <div className="bg-white p-6 border border-gray-200 rounded-md shadow-sm max-w-4xl">
            <h2 className="text-xl font-semibold mb-4">Update Candidate Knowledge Base</h2>
            
-           {/* Candidate Load Bar */}
            <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-md flex items-end gap-4">
              <div className="flex-1">
                <label className="block text-sm font-medium text-blue-900 mb-1">Load Existing Candidate Profile</label>
@@ -239,12 +275,14 @@ export default function Home() {
                        <div><label className="block text-xs font-medium">Job Title</label><input type="text" value={exp.job_title} onChange={(e) => handleArrayChange('experiences', idx, 'job_title', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
                        <div><label className="block text-xs font-medium">Start Date</label><input type="text" value={exp.start_date} onChange={(e) => handleArrayChange('experiences', idx, 'start_date', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
                        <div><label className="block text-xs font-medium">End Date</label><input type="text" value={exp.end_date} onChange={(e) => handleArrayChange('experiences', idx, 'end_date', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">Career Level</label><input type="text" value={exp.career_level} onChange={(e) => handleArrayChange('experiences', idx, 'career_level', e.target.value)} placeholder="e.g., Senior, Junior" className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">Job Type</label><input type="text" value={exp.job_type} onChange={(e) => handleArrayChange('experiences', idx, 'job_type', e.target.value)} placeholder="e.g., Full-time, Contractor" className="w-full p-2 text-sm border rounded" /></div>
                      </div>
                      <div className="mb-2"><label className="block text-xs font-medium">Skills (comma separated)</label><input type="text" value={exp.raw_skills} onChange={(e) => handleArrayChange('experiences', idx, 'raw_skills', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
                      <div><label className="block text-xs font-medium">Description</label><textarea value={exp.description} onChange={(e) => handleArrayChange('experiences', idx, 'description', e.target.value)} rows={3} className="w-full p-2 text-sm border rounded" /></div>
                    </div>
                  ))}
-                 <button onClick={() => addRow('experiences', { company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '' })} className="mt-2 text-sm text-blue-600 font-medium">+ Add Experience</button>
+                 <button onClick={() => addRow('experiences', { company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '', career_level: '', job_type: '' })} className="mt-2 text-sm text-blue-600 font-medium">+ Add Experience</button>
                </div>
 
                {/* Education */}

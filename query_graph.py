@@ -5,14 +5,14 @@ from collections import defaultdict
 GRAPHDB_URL = "http://localhost:7200/repositories/ESCO_Graph"
 
 def get_candidate_profile(candidate_name: str):
-    """Queries GraphDB for the candidate's jobs, companies, dates, and English skill labels."""
     sparql = SPARQLWrapper(GRAPHDB_URL)
     
     query = f"""
     PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     
-    SELECT ?jobTitle ?companyName ?startDate ?endDate ?skillName ?degree ?institution ?langName ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
+    SELECT ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?skillName ?degree ?institution ?langName ?langProf ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
         ?cv a my0:CV ;
             my0:aboutPerson ?person .
         ?person my0:firstName "{candidate_name}" .
@@ -24,6 +24,9 @@ def get_candidate_profile(candidate_name: str):
                  my0:startDate ?startDate ;
                  my0:employedIn ?company .
             OPTIONAL {{ ?job my0:endDate ?endDate . }}
+            OPTIONAL {{ ?job my0:jobDescription ?jobDescription . }}
+            OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
+            OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
             ?company my0:orgName ?companyName .
         }}
         
@@ -49,6 +52,10 @@ def get_candidate_profile(candidate_name: str):
             ?person my0:hasSkill ?lang .
             ?lang a my0:LanguageSkill ;
                   my0:skillName ?langName .
+            OPTIONAL {{
+                ?lang my0:languageSkillProficiency ?profObj .
+                ?profObj rdfs:label ?langProf .
+            }}
         }}
 
         # Target Preferences
@@ -65,6 +72,7 @@ def get_candidate_profile(candidate_name: str):
             ?addr my0:city ?city ; my0:country ?country .
         }}
 
+        # Websites
         OPTIONAL {{
             ?cv my0:hasWebsite ?site .
             ?site my0:websiteURL ?url ; my0:websiteType ?type .
@@ -73,23 +81,24 @@ def get_candidate_profile(candidate_name: str):
         # Honors
         OPTIONAL {{
             ?cv my0:hasHonorAward ?honor .
-            ?honor my0:honorTitle ?hTitle ;
+            ?honor my0:honortitle ?hTitle ;
                    my0:honorIssuer ?hIssuer ;
-                   my0:honorDate ?hDate .
+                   my0:honorIssuedDate ?hDate .
         }}
 
         # Publications
         OPTIONAL {{
             ?cv my0:hasPublication ?pub .
-            ?pub my0:pubTitle ?pTitle ;
-                 my0:pubDate ?pDate .
+            ?pub my0:publicationTitle ?pTitle ;
+                 my0:publicationDate ?pDate .
         }}
 
         # References
         OPTIONAL {{
             ?cv my0:hasReference ?ref .
-            ?ref my0:referenceName ?refName ;
-                 my0:referenceRelation ?refRel .
+            ?ref my0:referenceBy ?refPerson .
+            ?refPerson my0:firstName ?refName .
+            OPTIONAL {{ ?ref my0:refRelationDescription ?refRel . }}
         }}
     }}
     """
@@ -103,7 +112,7 @@ def get_candidate_profile(candidate_name: str):
         "jobs": {}, 
         "education": {},
         "skills": set(),
-        "languages": set(),
+        "languages": {},
         "target": None,
         "address": None,
         "websites": {},
@@ -119,7 +128,10 @@ def get_candidate_profile(candidate_name: str):
                 "title": row["jobTitle"]["value"],
                 "company": row["companyName"]["value"],
                 "start": row["startDate"]["value"],
-                "end": row.get("endDate", {}).get("value", "Present")
+                "end": row.get("endDate", {}).get("value", "Present"),
+                "description": row.get("jobDescription", {}).get("value", ""),
+                "career_level": row.get("careerLevel", {}).get("value", ""),
+                "job_type": row.get("jobType", {}).get("value", "")
             }
         
         if "degree" in row:
@@ -135,7 +147,11 @@ def get_candidate_profile(candidate_name: str):
             profile["skills"].add(row["skillName"]["value"])
             
         if "langName" in row:
-            profile["languages"].add(row["langName"]["value"])
+            lang_name = row["langName"]["value"]
+            profile["languages"][lang_name] = {
+                "name": lang_name,
+                "proficiency": row.get("langProf", {}).get("value", "")
+            }
 
         if "targetTitle" in row and profile["target"] is None:
             profile["target"] = {
@@ -158,31 +174,36 @@ def get_candidate_profile(candidate_name: str):
             }
             
         if "hTitle" in row:
-            profile["honors"].append({
+            honor_entry = {
                 "title": row["hTitle"]["value"],
                 "issuer": row["hIssuer"]["value"],
                 "date": row["hDate"]["value"]
-            })
+            }
+            if honor_entry not in profile["honors"]:
+                profile["honors"].append(honor_entry)
         
         if "pTitle" in row:
-            profile["publications"].append({
+            pub_entry = {
                 "title": row["pTitle"]["value"],
                 "date": row["pDate"]["value"]
-            })
+            }
+            if pub_entry not in profile["publications"]:
+                profile["publications"].append(pub_entry)
         
         if "refName" in row:
-            profile["references"].append({
+            ref_entry = {
                 "name": row["refName"]["value"],
-                "relation": row["refRel"]["value"]
-            })
+                "relation": row.get("refRel", {}).get("value", "")
+            }
+            if ref_entry not in profile["references"]:
+                profile["references"].append(ref_entry)
 
-    # Convert sets/dicts to clean lists for the final profile
     return {
         "name": candidate_name,
         "jobs": list(profile["jobs"].values()),
         "education": list(profile["education"].values()),
         "skills": list(profile["skills"]),
-        "languages": list(profile["languages"]),
+        "languages": list(profile["languages"].values()),
         "target": profile["target"],
         "address": profile["address"],
         "websites": list(profile["websites"].values()),
