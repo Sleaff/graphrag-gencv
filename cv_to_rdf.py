@@ -19,69 +19,73 @@ def map_to_esco_uri(skill_name: str) -> str | None:
     }
     return esco_database.get(skill_name.lower().strip())
 
-# --- 2. Pydantic Schemas ---
+class Address(BaseModel):
+    city: str  # alias="city"
+    country: str  # alias="country"
+    street: Optional[str] = None
+    postal_code: Optional[str] = None  # alias="postalCode"
+
 class Job(BaseModel):
-    company_name: str = Field(description="Name of the company, e.g., Dictus ApS")
-    job_title: str = Field(description="The role, e.g., Software Developer")
-    start_date: str
-    end_date: Optional[str]
-    raw_skills: List[str]
-    description: str = Field(description="Narrative description of responsibilities and achievements.")
+    company: str  # alias="organizationName"
+    title: str  # alias="jobTitle"
+    start: str  # alias="startDate"
+    end: Optional[str] = None  # alias="endDate"
+    description: Optional[str] = None  # alias="jobDescription"
+    is_current: bool = False  # alias="isCurrent"
+    raw_skills: List[str] = Field(default_factory=list)
 
 class Education(BaseModel):
-    degree: str
-    institution: str
-    start_date: str
-    end_date: str
-    field_of_study: str
-    description: str = Field(description="Description of coursework, thesis, or projects.")
+    degree: str  # alias="degreeType"
+    institution: str 
+    start_date: str  # alias="eduStartDate"
+    end_date: str  # alias="eduGradDate"
+    field_of_study: Optional[str] = None  # alias="eduMajor"
+    description: Optional[str] = None  # alias="eduDescription"
 
 class Language(BaseModel):
     name: str
-    proficiency: str
+    proficiency: Optional[str] = None
 
 class Target(BaseModel):
-    job_title: str = Field(description="The job title the candidate is seeking.")
-    job_mode: Optional[str] = Field(description="e.g., Full-time, Part-time.")
-    relocate: Optional[bool] = Field(description="Is the candidate willing to relocate?")
-    travel: Optional[bool] = Field(description="Is the candidate willing to travel?")
-
-class Address(BaseModel):
-    city: str
-    country: str
+    job_title: str  # alias="targetJobTitle"
+    job_mode: Optional[str] = None  # alias="targetJobMode"
+    relocate: Optional[bool] = None  # alias="targetConditionWillRelocate"
+    travel: Optional[bool] = None  # alias="targetConditionWillTravel"
 
 class Website(BaseModel):
-    url: str
-    website_type: str
-
-class HonorAward(BaseModel):
-    title: str
-    issuer: str
-    date: str
-
-class Publication(BaseModel):
-    title: str
-    publisher: str
-    date: str
-    description: str = Field(description="Abstract or summary of the publication.")
+    url: str 
+    website_type: Optional[str] = None
 
 class Reference(BaseModel):
-    name: str
-    relation: str  # e.g., "Professional" or "Personal"
-    description: str = "Available upon request" # Defaulting for privacy
+    name: str  # alias="referenceBy", Ontology points referenceBy to a Person
+    relation: Optional[str] = None
+
+# Ontology groups awards/publications into 'OtherInfo'
+class HonorAward(BaseModel):
+    title: str  # alias="otherInfoDescription"
+    issuer: Optional[str] = None
+    date: Optional[str] = None
+
+class Publication(BaseModel):
+    title: str  # alias="otherInfoDescription"
+    publisher: Optional[str] = None
+    date: Optional[str] = None
 
 class CandidateProfile(BaseModel):
-    name: str
-    experiences: List[Job]
-    education: List[Education]
-    technical_skills: List[str]
-    languages: List[Language]
-    target: Target
-    address: Address
-    websites: List[Website]
-    honors: List[HonorAward]
-    publications: List[Publication]
-    references: List[Reference]
+    name: str 
+    jobs: List[Job]  # alias="jobs"
+    education: List[Education]  # alias="education"
+    technical_skills: List[str]  # alias="skills"
+    languages: List[Language]  # alias="languages"
+    target: Target  # alias="target"
+    address: Address  # alias="address"
+    websites: List[Website] = Field(default_factory=list)  # alias="websites"
+    honors: List[HonorAward] = Field(default_factory=list)  # alias="honors"
+    publications: List[Publication] = Field(default_factory=list)  # alias="publications"
+    references: List[Reference] = Field(default_factory=list)  # alias="references"
+
+    class Config:
+        populate_by_name = True
 
 # --- 3. Main Pipeline ---
 async def map_cv_to_rdf(cv_markdown: str) -> str:
@@ -91,15 +95,15 @@ async def map_cv_to_rdf(cv_markdown: str) -> str:
         ChatMessage(
             role="system", 
             content="""You are an expert HR parser. Extract the full profile data.
-Return ONLY a valid JSON object matching this schema:
+Return ONLY a valid JSON object matching this schema exactly:
 {
     "name": "full name",
-    "experiences": [{"company_name": "...", "job_title": "...", "start_date": "...", "end_date": "...", "raw_skills": ["..."], "description": "..."}],
+    "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "raw_skills": ["..."], "description": "...", "is_current": false}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],
     "technical_skills": ["skill1", "skill2"],
     "languages": [{"name": "...", "proficiency": "..."}],
     "target": {"job_title": "...", "job_mode": "...", "relocate": true, "travel": true},
-    "address": {"city": "...", "country": "..."},
+    "address": {"city": "...", "country": "...", "street": "...", "postal_code": "..."},
     "websites": [{"url": "...", "website_type": "..."}],
     "honors": [{"title": "...", "issuer": "...", "date": "..."}],
     "publications": [{"title": "...", "publisher": "...", "date": "...", "description": "..."}],
@@ -129,12 +133,12 @@ Return ONLY a valid JSON object matching this schema:
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
     data_dict = {
         "name": candidate_data.name,
-        "experiences": [],
+        "jobs": [],
         "education": [],
         "publications": [],
         "technical_skills": candidate_data.technical_skills,
         "languages": [l.model_dump() for l in candidate_data.languages],
-        "target": candidate_data.target.model_dump(),
+        "target": candidate_data.target.model_dump() if candidate_data.target else None,
         "address": candidate_data.address.model_dump() if candidate_data.address else None,
         "websites": [w.model_dump() for w in candidate_data.websites],
         "honors": [h.model_dump() for h in candidate_data.honors],
@@ -142,25 +146,32 @@ Return ONLY a valid JSON object matching this schema:
     }
 
     # --- VECTOR & ESCO MAPPING FOR JOBS ---
-    for idx, job in enumerate(candidate_data.experiences):
-        esco_uris = [map_to_esco_uri(s) for s in job.raw_skills if map_to_esco_uri(s)]
-        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.description)
+    for idx, job in enumerate(candidate_data.jobs):
+        raw_skills = getattr(job, "raw_skills", [])
+        esco_uris = [map_to_esco_uri(s) for s in raw_skills if map_to_esco_uri(s)]
+        
+        desc = getattr(job, "description", "") or ""
+        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", desc)
         
         job_dict = job.model_dump()
         job_dict["esco_skill_uris"] = esco_uris
         job_dict["vector_id"] = vector_id
-        data_dict["experiences"].append(job_dict)
+        data_dict["jobs"].append(job_dict)
 
     # --- VECTOR MAPPING FOR EDUCATION ---
     for idx, edu in enumerate(candidate_data.education):
-        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.description)
+        desc = getattr(edu, "description", "") or ""
+        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", desc)
+        
         edu_dict = edu.model_dump()
         edu_dict["vector_id"] = vector_id
         data_dict["education"].append(edu_dict)
         
     # --- VECTOR MAPPING FOR PUBLICATIONS ---
     for idx, pub in enumerate(candidate_data.publications):
-        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.description)
+        desc = getattr(pub, "description", "") or getattr(pub, "title", "")
+        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", desc)
+        
         pub_dict = pub.model_dump()
         pub_dict["vector_id"] = vector_id
         data_dict["publications"].append(pub_dict)
@@ -178,7 +189,7 @@ async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
     
     data_dict = {
         "name": candidate_data.name,
-        "experiences": [],
+        "jobs": [],
         "education": [],
         "publications": [],
         "technical_skills": candidate_data.technical_skills,
@@ -191,25 +202,32 @@ async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
     }
 
     # --- VECTOR & ESCO MAPPING FOR JOBS ---
-    for idx, job in enumerate(candidate_data.experiences):
-        esco_uris = [map_to_esco_uri(s) for s in job.raw_skills if map_to_esco_uri(s)]
-        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.description)
+    for idx, job in enumerate(candidate_data.jobs):
+        raw_skills = getattr(job, "raw_skills", [])
+        esco_uris = [map_to_esco_uri(s) for s in raw_skills if map_to_esco_uri(s)]
+        
+        desc = getattr(job, "description", "") or ""
+        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", desc)
         
         job_dict = job.model_dump()
         job_dict["esco_skill_uris"] = esco_uris
         job_dict["vector_id"] = vector_id
-        data_dict["experiences"].append(job_dict)
+        data_dict["jobs"].append(job_dict)
 
     # --- VECTOR MAPPING FOR EDUCATION ---
     for idx, edu in enumerate(candidate_data.education):
-        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.description)
+        desc = getattr(edu, "description", "") or ""
+        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", desc)
+        
         edu_dict = edu.model_dump()
         edu_dict["vector_id"] = vector_id
         data_dict["education"].append(edu_dict)
         
     # --- VECTOR MAPPING FOR PUBLICATIONS ---
     for idx, pub in enumerate(candidate_data.publications):
-        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.description)
+        desc = getattr(pub, "description", "") or getattr(pub, "title", "")
+        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", desc)
+        
         pub_dict = pub.model_dump()
         pub_dict["vector_id"] = vector_id
         data_dict["publications"].append(pub_dict)

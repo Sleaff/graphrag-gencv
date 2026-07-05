@@ -33,23 +33,22 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     g.add((person_uri, MY0.firstName, Literal(candidate_data.get("name", ""), datatype=XSD.string)))
     
     # --- Work History ---
-    for idx, job in enumerate(candidate_data.get("experiences", [])):
+    for idx, job in enumerate(candidate_data.get("jobs", [])):
         work_uri = URIRef(f"http://example.com/data/work_{candidate_slug}_{idx}")
-        company_uri = URIRef(f"http://example.com/data/comp_{sanitize_uri_string(job['company_name'])}")
+        company_name = job.get("company", "Unknown") 
+        company_uri = URIRef(f"http://example.com/data/comp_{sanitize_uri_string(company_name)}")
         
         g.add((cv_uri, MY0.hasWorkHistory, work_uri))
         g.add((work_uri, RDF.type, MY0.WorkHistory))
-        g.add((work_uri, MY0.jobTitle, Literal(job.get("job_title", ""), datatype=XSD.string)))
-        g.add((work_uri, MY0.startDate, Literal(job.get("start_date", ""), datatype=XSD.string)))
+        g.add((work_uri, MY0.jobTitle, Literal(job.get("title", ""), datatype=XSD.string)))
+        g.add((work_uri, MY0.startDate, Literal(job.get("start", ""), datatype=XSD.string)))
         g.add((work_uri, MY0.employedIn, company_uri))
         g.add((company_uri, RDF.type, MY0.Company))
-        g.add((company_uri, MY0.orgName, Literal(job.get("company_name", ""), datatype=XSD.string)))
+        g.add((company_uri, MY0.orgName, Literal(company_name, datatype=XSD.string)))
         
-        # --- Link Vector Database Reference ---
         if job.get("vector_id"):
             g.add((work_uri, MY0.hasVectorReference, Literal(job["vector_id"], datatype=XSD.string)))
 
-        # --- Link ESCO Skills Directly to This Job ---
         for esco_uri_str in job.get("esco_skill_uris", []):
             esco_skill_uri = URIRef(esco_uri_str)
             g.add((work_uri, MY0.developedSkill, esco_skill_uri))
@@ -57,7 +56,7 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     # --- Education ---
     for idx, edu in enumerate(candidate_data.get("education", [])):
         edu_uri = URIRef(f"http://example.com/data/edu_{candidate_slug}_{idx}")
-        org_uri = URIRef(f"http://example.com/data/uni_{sanitize_uri_string(edu['institution'])}")
+        org_uri = URIRef(f"http://example.com/data/uni_{sanitize_uri_string(edu.get('institution', ''))}")
         
         g.add((cv_uri, MY0.hasEducation, edu_uri))
         g.add((edu_uri, RDF.type, MY0.Education))
@@ -68,11 +67,9 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((org_uri, RDF.type, MY0.EducationalOrg))
         g.add((org_uri, MY0.orgName, Literal(edu.get("institution", ""), datatype=XSD.string)))
 
-        # --- Link Vector Database Reference ---
         if edu.get("vector_id"):
             g.add((edu_uri, MY0.hasVectorReference, Literal(edu["vector_id"], datatype=XSD.string)))
 
-        # --- Link ESCO Skills Directly to This Education ---
         for esco_uri_str in edu.get("esco_skill_uris", []):
             esco_skill_uri = URIRef(esco_uri_str)
             g.add((edu_uri, MY0.developedSkill, esco_skill_uri))
@@ -90,7 +87,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((person_uri, MY0.hasSkill, lang_uri))
         g.add((lang_uri, RDF.type, MY0.LanguageSkill))
         g.add((lang_uri, MY0.skillName, Literal(lang.get("name", ""), datatype=XSD.string)))
-
     # --- Target Career Preferences ---
     target_data = candidate_data.get("target")
     if target_data:
@@ -135,7 +131,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((pub_uri, MY0.pubTitle, Literal(pub.get("title", ""))))
         g.add((pub_uri, MY0.pubDate, Literal(pub.get("date", ""))))
         
-        # --- Link Vector Database Reference ---
         if pub.get("vector_id"):
             g.add((pub_uri, MY0.hasVectorReference, Literal(pub["vector_id"], datatype=XSD.string)))
 

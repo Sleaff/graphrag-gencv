@@ -10,7 +10,7 @@ from typing import List
 GRAPHDB_UPDATE_URL = "http://localhost:7200/repositories/your_repo_name/statements"
 
 # Define the exact structure we want the LLM to extract
-class Experience(BaseModel):
+class Job(BaseModel):
     company: str
     title: str
     start_date: str
@@ -19,15 +19,15 @@ class Experience(BaseModel):
     skills: List[str]
 
 class CandidateProfile(BaseModel):
-    experiences: List[Experience]
+    jobs: List[Job]
 
 def extract_structured_data(raw_text: str) -> dict:
     """Uses the LLM to parse raw CV text into a strict JSON structure."""
     prompt = f"""
-    You are an expert CV parser. Extract all work experience from the following text.
+    You are an expert CV parser. Extract all work job from the following text.
     Return ONLY a valid JSON object matching this schema:
     {{
-        "experiences": [
+        "jobs": [
             {{
                 "company": "Company Name",
                 "title": "Job Title",
@@ -60,15 +60,15 @@ def process_new_profile(candidate_name: str, raw_text: str) -> str:
     candidate_uri = f"ex:Candidate_{candidate_name.replace(' ', '')}"
     sparql_triples.append(f"{candidate_uri} a ex:Candidate ; ex:name \"{candidate_name}\" .")
 
-    for exp in structured_data.get("experiences", []):
-        # Generate a unique ID for this specific experience
+    for exp in structured_data.get("jobs", []):
+        # Generate a unique ID for this specific job
         exp_id = str(uuid.uuid4())
-        exp_uri = f"ex:Experience_{exp_id}"
+        exp_uri = f"ex:Job_{exp_id}"
         company_uri = f"ex:Company_{exp['company'].replace(' ', '')}"
         
         # 2. Insert into ChromaDB (Vector Search)
         # We embed the description and store it with the exp_id so we can link it later
-        logger.info(f"Generating embedding for experience at {exp['company']}...")
+        logger.info(f"Generating embedding for job at {exp['company']}...")
         embedding = call_embedding(text=exp["description"])
         
         collection.add(
@@ -80,10 +80,10 @@ def process_new_profile(candidate_name: str, raw_text: str) -> str:
 
         # 3. Build the SPARQL Triples (Graph Search)
         sparql_triples.extend([
-            f"{exp_uri} a ex:Experience .",
+            f"{exp_uri} a ex:Job .",
             f"{exp_uri} ex:atCompany {company_uri} .",
             f"{exp_uri} ex:hasTitle \"{exp['title']}\" .",
-            f"{candidate_uri} ex:hasExperience {exp_uri} ."
+            f"{candidate_uri} ex:hasJob {exp_uri} ."
         ])
         
         for skill in exp.get("skills", []):
@@ -103,4 +103,4 @@ def process_new_profile(candidate_name: str, raw_text: str) -> str:
     sparql.setQuery(insert_query)
     sparql.query()
     
-    return f"Successfully ingested profile for {candidate_name} with {len(structured_data.get('experiences', []))} experiences."
+    return f"Successfully ingested profile for {candidate_name} with {len(structured_data.get('jobs', []))} jobs."
