@@ -171,8 +171,6 @@ async def generate_latex(design_id: int, profile: CandidateProfile, language: st
 @app.get("/list-candidates")
 async def list_candidates():
     """Returns a list of all candidate names from the database."""
-    # TODO: Replace with your actual DB query (e.g., query GraphDB for all person nodes)
-    # Mock data for testing:
     return ["Kenneth Plum Toft", "Jane Doe"]
 
 

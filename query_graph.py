@@ -2,7 +2,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import json
 from collections import defaultdict
 
-GRAPHDB_URL = "http://localhost:7200/repositories/ESCO_Graph"
+GRAPHDB_URL = "http://localhost:7200/repositories/ResumeGraph"
 
 def get_candidate_profile(candidate_name: str):
     sparql = SPARQLWrapper(GRAPHDB_URL)
@@ -12,41 +12,83 @@ def get_candidate_profile(candidate_name: str):
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     
-    SELECT ?phoneMobile ?phoneHome ?phoneWork ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?projName ?projRole ?projStart ?projEnd ?projDesc ?projCreator ?projUrl ?projCurrent ?skillName ?degree ?institution ?langName ?langProf ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
+    SELECT 
+        ?gender ?nationality ?dob ?driverLicence ?shortDesc ?longDesc 
+        ?phoneMobile ?phoneHome ?phoneWork 
+        ?imName ?imUsername 
+        ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType 
+        ?degree ?institution ?eduStart ?eduGrad ?eduDesc 
+        ?crsTitle ?crsDesc ?crsUrl ?crsStart ?crsEnd ?crsCert ?crsOrg 
+        ?patTitle ?patOffice ?patNum ?patInv ?patUrl ?patDesc ?patDate ?patStatus 
+        ?projName ?projRole ?projStart ?projEnd ?projDesc ?projCreator ?projUrl ?projCurrent 
+        ?skillName ?langName ?langProf 
+        ?targetTitle ?relocate ?travel ?city ?country ?url ?type 
+        ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?pDesc ?refName ?refRel 
+        ?otherType ?otherDesc
+    WHERE {{
         ?cv a my0:CV ;
             my0:aboutPerson ?person .
         ?person my0:firstName "{candidate_name}" .
         
         # Person Details
+        OPTIONAL {{ ?person my0:gender ?gObj . ?gObj rdfs:label ?gender . }}
+        OPTIONAL {{ ?person my0:hasNationality ?nat . BIND(REPLACE(STR(?nat), ".*#", "") AS ?nationality) }}
+        OPTIONAL {{ ?person my0:dateOfBirth ?dob . }}
+        OPTIONAL {{ ?person my0:driversLicence ?driverLicence . }}
+        OPTIONAL {{ ?person my0:personShortDescription ?shortDesc . }}
+        OPTIONAL {{ ?person my0:personLongDescription ?longDesc . }}
         OPTIONAL {{ ?person my0:phoneNumberMobile ?phoneMobile . }}
         OPTIONAL {{ ?person my0:phoneNumberHome ?phoneHome . }}
         OPTIONAL {{ ?person my0:phoneNumberWork ?phoneWork . }}
 
-        # Jobs
+        OPTIONAL {{
+            ?person my0:hasInstantMessaging ?im .
+            ?im my0:instantMessagingUsername ?imUsername .
+            OPTIONAL {{ ?im my0:instantMessagingName ?imObj . ?imObj rdfs:label ?imName . }}
+        }}
+
         OPTIONAL {{
             ?cv my0:hasWorkHistory ?job .
-            ?job my0:jobTitle ?jobTitle ;
-                 my0:startDate ?startDate ;
-                 my0:employedIn ?company .
+            ?job my0:jobTitle ?jobTitle ; my0:startDate ?startDate ; my0:employedIn ?company .
+            ?company my0:orgName ?companyName .
             OPTIONAL {{ ?job my0:endDate ?endDate . }}
             OPTIONAL {{ ?job my0:jobDescription ?jobDescription . }}
             OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
             OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
-            ?company my0:orgName ?companyName .
         }}
         
-        # Education
         OPTIONAL {{
             ?cv my0:hasEducation ?edu .
-            ?edu my0:degreeFieldOfStudy ?degree ;
-                 my0:studiedIn ?eduOrg .
+            ?edu my0:degreeFieldOfStudy ?degree ; my0:studiedIn ?eduOrg .
             ?eduOrg my0:orgName ?institution .
-            
             OPTIONAL {{ ?edu my0:eduStartDate ?eduStart . }}
             OPTIONAL {{ ?edu my0:eduGradDate ?eduGrad . }}
+            OPTIONAL {{ ?edu my0:eduDescription ?eduDesc . }}
         }}
 
-        # Projects
+        OPTIONAL {{
+            ?cv my0:hasCourse ?crs .
+            ?crs my0:courseTitle ?crsTitle .
+            OPTIONAL {{ ?crs my0:courseDescription ?crsDesc . }}
+            OPTIONAL {{ ?crs my0:courseURL ?crsUrl . }}
+            OPTIONAL {{ ?crs my0:courseStartDate ?crsStart . }}
+            OPTIONAL {{ ?crs my0:courseFinishDate ?crsEnd . }}
+            OPTIONAL {{ ?crs my0:hasCertification ?crsCert . }}
+            OPTIONAL {{ ?crs my0:organizedBy ?crsOrgObj . ?crsOrgObj my0:orgName ?crsOrg . }}
+        }}
+
+        OPTIONAL {{
+            ?cv my0:hasPatent ?pat .
+            ?pat my0:patentTitle ?patTitle .
+            OPTIONAL {{ ?pat my0:patentOffice ?patOffice . }}
+            OPTIONAL {{ ?pat my0:patentNumber ?patNum . }}
+            OPTIONAL {{ ?pat my0:patentInventor ?patInv . }}
+            OPTIONAL {{ ?pat my0:patentURL ?patUrl . }}
+            OPTIONAL {{ ?pat my0:patentDescription ?patDesc . }}
+            OPTIONAL {{ ?pat my0:patentIssuedDate ?patDate . }}
+            OPTIONAL {{ ?pat my0:patentStatus ?patObj . ?patObj rdfs:label ?patStatus . }}
+        }}
+
         OPTIONAL {{
             ?cv my0:hasProject ?proj .
             ?proj my0:projectName ?projName .
@@ -59,91 +101,67 @@ def get_candidate_profile(candidate_name: str):
             OPTIONAL {{ ?proj my0:projectIsCurrent ?projCurrent . }}
         }}
         
-        # Skills
+        OPTIONAL {{ ?cv my0:hasSkill ?skillUri . ?skillUri my0:skillName ?skillName . }}
         OPTIONAL {{
-            ?cv my0:hasSkill ?skillUri .
-            ?skillUri my0:skillName ?skillName .
+            ?person my0:hasSkill ?lang . ?lang a my0:LanguageSkill ; my0:skillName ?langName .
+            OPTIONAL {{ ?lang my0:languageSkillProficiency ?profObj . ?profObj rdfs:label ?langProf . }}
         }}
 
-        # Languages
         OPTIONAL {{
-            ?person my0:hasSkill ?lang .
-            ?lang a my0:LanguageSkill ;
-                  my0:skillName ?langName .
-            OPTIONAL {{
-                ?lang my0:languageSkillProficiency ?profObj .
-                ?profObj rdfs:label ?langProf .
-            }}
+            ?cv my0:hasOtherInfo ?other .
+            ?other my0:otherInfoDescription ?otherDesc .
+            OPTIONAL {{ ?other my0:otherInfoType ?otherObj . ?otherObj rdfs:label ?otherType . }}
         }}
 
-        # Target Preferences
-        OPTIONAL {{
-            ?cv my0:hasTarget ?target .
-            ?target my0:targetJobTitle ?targetTitle ;
-                    my0:targetConditionWillRelocate ?relocate ;
-                    my0:targetConditionWillTravel ?travel .
-        }}
-
-        # Address & Websites
-        OPTIONAL {{
-            ?person my0:hasAddress ?addr .
-            ?addr my0:city ?city ; my0:country ?country .
-        }}
-
-        # Websites
-        OPTIONAL {{
-            ?cv my0:hasWebsite ?site .
-            ?site my0:websiteURL ?url ; my0:websiteType ?type .
-        }}
-
-        # Honors
-        OPTIONAL {{
-            ?cv my0:hasHonorAward ?honor .
-            ?honor my0:honortitle ?hTitle ;
-                   my0:honorIssuer ?hIssuer ;
-                   my0:honorIssuedDate ?hDate .
-        }}
-
-        # Publications
-        OPTIONAL {{
-            ?cv my0:hasPublication ?pub .
-            ?pub my0:publicationTitle ?pTitle ;
-                 my0:publicationDate ?pDate .
-        }}
-
-        # References
-        OPTIONAL {{
-            ?cv my0:hasReference ?ref .
-            ?ref my0:referenceBy ?refPerson .
-            ?refPerson my0:firstName ?refName .
-            OPTIONAL {{ ?ref my0:refRelationDescription ?refRel . }}
-        }}
+        OPTIONAL {{ ?person my0:hasAddress ?addr . ?addr my0:city ?city ; my0:country ?country . }}
     }}
     """
-    
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
     
     profile = {
-        "name": candidate_name,
-        "phone_mobile": "",
-        "phone_home": "",
+        "name": candidate_name, 
+        "gender": "", 
+        "nationality": "", 
+        "date_of_birth": "", 
+        "drivers_licence": "", 
+        "short_description": "", 
+        "long_description": "",
+        "phone_mobile": "", 
+        "phone_home": "", 
         "phone_work": "",
         "jobs": {}, 
-        "education": {},
-        "projects": [],
-        "skills": set(),
+        "education": {}, 
+        "courses": [], 
+        "patents": [], 
+        "projects": [], 
+        "skills": set(), 
         "languages": {},
-        "target": None,
-        "address": None,
-        "websites": {},
-        "honors": [],
-        "publications": [],
-        "references": [],
+        "target": None, 
+        "address": None, 
+        "websites": {}, 
+        "instant_messaging": [], 
+        "honors": [], 
+        "publications": [], 
+        "references": [], 
+        "other_info": []
     }
     
     for row in results["results"]["bindings"]:
+        # Scalars (Person details)
+        if "gender" in row and not profile["gender"]:
+            profile["gender"] = row["gender"]["value"]
+        if "nationality" in row and not profile["nationality"]:
+            profile["nationality"] = row["nationality"]["value"]
+        if "dob" in row and not profile["date_of_birth"]:
+            profile["date_of_birth"] = row["dob"]["value"]
+        if "driverLicence" in row and not profile["drivers_licence"]:
+            profile["drivers_licence"] = row["driverLicence"]["value"]
+        if "shortDesc" in row and not profile["short_description"]:
+            profile["short_description"] = row["shortDesc"]["value"]
+        if "longDesc" in row and not profile["long_description"]:
+            profile["long_description"] = row["longDesc"]["value"]
         if "phoneMobile" in row and not profile["phone_mobile"]:
             profile["phone_mobile"] = row["phoneMobile"]["value"]
         if "phoneHome" in row and not profile["phone_home"]:
@@ -151,6 +169,7 @@ def get_candidate_profile(candidate_name: str):
         if "phoneWork" in row and not profile["phone_work"]:
             profile["phone_work"] = row["phoneWork"]["value"]
 
+        # Jobs
         if "jobTitle" in row:
             job_key = row["jobTitle"]["value"] + row["companyName"]["value"]
             profile["jobs"][job_key] = {
@@ -163,15 +182,47 @@ def get_candidate_profile(candidate_name: str):
                 "job_type": row.get("jobType", {}).get("value", "")
             }
         
+        # Education
         if "degree" in row:
             edu_key = row["degree"]["value"] + row["institution"]["value"]
             profile["education"][edu_key] = {
                 "degree": row["degree"]["value"],
                 "institution": row["institution"]["value"],
                 "start_date": row.get("eduStart", {}).get("value", "N/A"),
-                "end_date": row.get("eduGrad", {}).get("value", "N/A")
+                "end_date": row.get("eduGrad", {}).get("value", "N/A"),
+                "description": row.get("eduDesc", {}).get("value", "")
             }
 
+        # Courses
+        if "crsTitle" in row:
+            crs_entry = {
+                "title": row["crsTitle"]["value"],
+                "description": row.get("crsDesc", {}).get("value", ""),
+                "url": row.get("crsUrl", {}).get("value", ""),
+                "start_date": row.get("crsStart", {}).get("value", ""),
+                "finish_date": row.get("crsEnd", {}).get("value", ""),
+                "organized_by": row.get("crsOrg", {}).get("value", ""),
+                "has_certification": row.get("crsCert", {}).get("value", "false").lower() == "true"
+            }
+            if crs_entry not in profile["courses"]:
+                profile["courses"].append(crs_entry)
+
+        # Patents
+        if "patTitle" in row:
+            pat_entry = {
+                "title": row["patTitle"]["value"],
+                "office": row.get("patOffice", {}).get("value", ""),
+                "number": row.get("patNum", {}).get("value", ""),
+                "inventor": row.get("patInv", {}).get("value", ""),
+                "url": row.get("patUrl", {}).get("value", ""),
+                "description": row.get("patDesc", {}).get("value", ""),
+                "issued_date": row.get("patDate", {}).get("value", ""),
+                "status": row.get("patStatus", {}).get("value", "")
+            }
+            if pat_entry not in profile["patents"]:
+                profile["patents"].append(pat_entry)
+
+        # Projects
         if "projName" in row:
             proj_entry = {
                 "name": row["projName"]["value"],
@@ -185,7 +236,26 @@ def get_candidate_profile(candidate_name: str):
             }
             if proj_entry not in profile["projects"]:
                 profile["projects"].append(proj_entry)
+
+        # Instant Messaging
+        if "imUsername" in row:
+            im_entry = {
+                "name": row.get("imName", {}).get("value", "IM"),
+                "username": row["imUsername"]["value"]
+            }
+            if im_entry not in profile["instant_messaging"]:
+                profile["instant_messaging"].append(im_entry)
+
+        # Other Info
+        if "otherDesc" in row:
+            other_entry = {
+                "type": row.get("otherType", {}).get("value", "Misc"),
+                "description": row["otherDesc"]["value"]
+            }
+            if other_entry not in profile["other_info"]:
+                profile["other_info"].append(other_entry)
             
+        # Skills & Languages
         if "skillName" in row:
             profile["skills"].add(row["skillName"]["value"])
             
@@ -196,6 +266,7 @@ def get_candidate_profile(candidate_name: str):
                 "proficiency": row.get("langProf", {}).get("value", "")
             }
 
+        # Target Data
         if "targetTitle" in row and profile["target"] is None:
             profile["target"] = {
                 "job_title": row["targetTitle"]["value"],
@@ -203,12 +274,14 @@ def get_candidate_profile(candidate_name: str):
                 "travel": row["travel"]["value"].lower() == "true"
             }
 
+        # Address Data
         if "city" in row:
             profile["address"] = {
                 "city": row["city"]["value"],
                 "country": row["country"]["value"]
             }
 
+        # Websites
         if "url" in row:
             site_key = row["url"]["value"]
             profile["websites"][site_key] = {
@@ -216,6 +289,7 @@ def get_candidate_profile(candidate_name: str):
                 "website_type": row["type"]["value"]
             }
             
+        # Honors
         if "hTitle" in row:
             honor_entry = {
                 "title": row["hTitle"]["value"],
@@ -225,6 +299,7 @@ def get_candidate_profile(candidate_name: str):
             if honor_entry not in profile["honors"]:
                 profile["honors"].append(honor_entry)
         
+        # Publications
         if "pTitle" in row:
             pub_entry = {
                 "title": row["pTitle"]["value"],
@@ -233,6 +308,7 @@ def get_candidate_profile(candidate_name: str):
             if pub_entry not in profile["publications"]:
                 profile["publications"].append(pub_entry)
         
+        # References
         if "refName" in row:
             ref_entry = {
                 "name": row["refName"]["value"],
@@ -241,22 +317,33 @@ def get_candidate_profile(candidate_name: str):
             if ref_entry not in profile["references"]:
                 profile["references"].append(ref_entry)
 
+    # Convert sets and dict mappings back to lists
     return {
         "name": candidate_name,
-        "phone_mobile": profile["phone_mobile"],
-        "phone_home": profile["phone_home"],
+        "gender": profile["gender"], 
+        "nationality": profile["nationality"], 
+        "date_of_birth": profile["date_of_birth"], 
+        "drivers_licence": profile["drivers_licence"], 
+        "short_description": profile["short_description"], 
+        "long_description": profile["long_description"],
+        "phone_mobile": profile["phone_mobile"], 
+        "phone_home": profile["phone_home"], 
         "phone_work": profile["phone_work"],
-        "jobs": list(profile["jobs"].values()),
+        "jobs": list(profile["jobs"].values()), 
         "education": list(profile["education"].values()),
+        "courses": profile["courses"], 
+        "patents": profile["patents"], 
         "projects": profile["projects"],
-        "skills": list(profile["skills"]),
-        "languages": list(profile["languages"].values()),
+        "skills": list(profile["skills"]), 
+        "languages": list(profile["languages"].values()), 
         "target": profile["target"],
-        "address": profile["address"],
-        "websites": list(profile["websites"].values()),
-        "honors": profile["honors"],
-        "publications": profile["publications"],
-        "references": profile["references"]
+        "address": profile["address"], 
+        "websites": list(profile["websites"].values()), 
+        "instant_messaging": profile["instant_messaging"],
+        "honors": profile["honors"], 
+        "publications": profile["publications"], 
+        "references": profile["references"], 
+        "other_info": profile["other_info"]
     }
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@ from llm_service import call_llm, ChatMessage
 from vector_service import generate_and_store_embedding
 import json
 
-# --- 1. ESCO Mapping Bridge ---
 def map_to_esco_uri(skill_name: str) -> str | None:
     esco_database = {
         "python": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
@@ -43,6 +42,25 @@ class Education(BaseModel):
     field_of_study: Optional[str] = None 
     description: Optional[str] = None 
 
+class Course(BaseModel):
+    title: str
+    description: Optional[str] = None
+    url: Optional[str] = None
+    start_date: Optional[str] = None
+    finish_date: Optional[str] = None
+    has_certification: bool = False
+    organized_by: Optional[str] = None
+
+class Patent(BaseModel):
+    title: str
+    office: Optional[str] = None
+    number: Optional[str] = None
+    inventor: Optional[str] = None
+    url: Optional[str] = None
+    description: Optional[str] = None
+    issued_date: Optional[str] = None
+    status: Optional[str] = None
+
 class Project(BaseModel):
     name: str
     role: Optional[str] = None
@@ -67,6 +85,10 @@ class Website(BaseModel):
     url: str 
     website_type: Optional[str] = None
 
+class InstantMessaging(BaseModel):
+    name: str
+    username: str
+
 class Reference(BaseModel):
     name: str 
     relation: Optional[str] = None
@@ -81,50 +103,66 @@ class Publication(BaseModel):
     publisher: Optional[str] = None
     date: Optional[str] = None
 
+class OtherInfo(BaseModel):
+    type: str
+    description: str
+
 class CandidateProfile(BaseModel):
     name: str 
+    gender: Optional[str] = None
+    nationality: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    drivers_licence: Optional[str] = None
+    short_description: Optional[str] = None
+    long_description: Optional[str] = None
     phone_mobile: Optional[str] = None
     phone_home: Optional[str] = None
     phone_work: Optional[str] = None
-    jobs: List[Job] 
-    education: List[Education] 
+    
+    jobs: List[Job] = Field(default_factory=list)
+    education: List[Education] = Field(default_factory=list)
+    courses: List[Course] = Field(default_factory=list)
+    patents: List[Patent] = Field(default_factory=list)
     projects: List[Project] = Field(default_factory=list)
-    technical_skills: List[str] 
-    languages: List[Language] 
-    target: Target 
-    address: Address 
-    websites: List[Website] = Field(default_factory=list) 
+    technical_skills: List[str] = Field(default_factory=list)
+    languages: List[Language] = Field(default_factory=list)
+    target: Optional[Target] = None
+    address: Optional[Address] = None
+    websites: List[Website] = Field(default_factory=list)
+    instant_messaging: List[InstantMessaging] = Field(default_factory=list)
     honors: List[HonorAward] = Field(default_factory=list) 
     publications: List[Publication] = Field(default_factory=list) 
-    references: List[Reference] = Field(default_factory=list) 
+    references: List[Reference] = Field(default_factory=list)
+    other_info: List[OtherInfo] = Field(default_factory=list)
 
     class Config:
         populate_by_name = True
 
-# --- 3. Main Pipeline ---
 async def map_cv_to_rdf(cv_markdown: str) -> str:
     messages = [
         ChatMessage(
             role="system", 
-            content="""You are an expert HR parser. Extract the full profile data.
-IMPORTANT: For the job 'description', ONLY extract the description of the main activities and responsibilities in the held position. Do NOT include descriptions of the company itself.
+            content="""You are an expert HR parser. Extract the full profile data perfectly aligning with the schema.
+IMPORTANT: For the job 'description', ONLY extract the description of the main activities and responsibilities. Do NOT include descriptions of the company itself.
 Return ONLY a valid JSON object matching this schema exactly:
 {
-    "name": "full name",
-    "phone_mobile": "...",
-    "phone_home": "...",
-    "phone_work": "...",
+    "name": "full name", "gender": "...", "nationality": "...", "date_of_birth": "...", "drivers_licence": "...", "short_description": "...", "long_description": "...",
+    "phone_mobile": "...", "phone_home": "...", "phone_work": "...",
     "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "career_level": "...", "job_type": "...", "raw_skills": ["..."], "description": "...", "is_current": false}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],
+    "courses": [{"title": "...", "description": "...", "url": "...", "start_date": "...", "finish_date": "...", "has_certification": true, "organized_by": "..."}],
+    "patents": [{"title": "...", "office": "...", "number": "...", "inventor": "...", "url": "...", "description": "...", "issued_date": "...", "status": "..."}],
     "projects": [{"name": "...", "role": "...", "start_date": "...", "end_date": "...", "description": "...", "url": "...", "creator": "...", "is_current": false}],
     "technical_skills": ["skill1", "skill2"],
     "languages": [{"name": "...", "proficiency": "..."}],
     "target": {"job_title": "...", "job_mode": "...", "relocate": true, "travel": true},
     "address": {"city": "...", "country": "...", "street": "...", "postal_code": "..."},
     "websites": [{"url": "...", "website_type": "..."}],
+    "instant_messaging": [{"name": "...", "username": "..."}],
     "honors": [{"title": "...", "issuer": "...", "date": "..."}],
     "publications": [{"title": "...", "publisher": "...", "date": "...", "description": "..."}],
-    "references": [{"name": "...", "relation": "..."}]
+    "references": [{"name": "...", "relation": "..."}],
+    "other_info": [{"type": "...", "description": "..."}]
 }"""
         ),
         ChatMessage(role="user", content=cv_markdown),
@@ -140,128 +178,68 @@ Return ONLY a valid JSON object matching this schema exactly:
             
         parsed_data = json.loads(candidate_data_json)
         candidate_data = CandidateProfile(**parsed_data)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"LLM response was not valid JSON: {candidate_data_json}") from e
     except Exception as e:
-        raise ValueError(f"Failed to parse LLM response into CandidateProfile: {e}") from e
+        raise ValueError(f"Failed to parse LLM response: {e}") from e
     
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
-    data_dict = {
-        "name": candidate_data.name,
-        "phone_mobile": candidate_data.phone_mobile,
-        "phone_home": candidate_data.phone_home,
-        "phone_work": candidate_data.phone_work,
-        "jobs": [],
-        "education": [],
-        "projects": [],
-        "publications": [],
-        "technical_skills": candidate_data.technical_skills,
-        "languages": [l.model_dump() for l in candidate_data.languages],
-        "target": candidate_data.target.model_dump() if candidate_data.target else None,
-        "address": candidate_data.address.model_dump() if candidate_data.address else None,
-        "websites": [w.model_dump() for w in candidate_data.websites],
-        "honors": [h.model_dump() for h in candidate_data.honors],
-        "references": [r.model_dump() for r in candidate_data.references]
-    }
+    data_dict = candidate_data.model_dump()
 
-    for idx, job in enumerate(candidate_data.jobs):
-        raw_skills = getattr(job, "raw_skills", [])
-        esco_uris = [map_to_esco_uri(s) for s in raw_skills if map_to_esco_uri(s)]
-        
-        desc = getattr(job, "description", "") or ""
-        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", desc)
-        
-        job_dict = job.model_dump()
-        job_dict["esco_skill_uris"] = esco_uris
-        job_dict["vector_id"] = vector_id
-        data_dict["jobs"].append(job_dict)
+    # Generate Embeddings for textual components
+    for idx, job in enumerate(data_dict["jobs"]):
+        job["esco_skill_uris"] = [map_to_esco_uri(s) for s in job.get("raw_skills", []) if map_to_esco_uri(s)]
+        job["vector_id"] = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.get("description", ""))
 
-    for idx, edu in enumerate(candidate_data.education):
-        desc = getattr(edu, "description", "") or ""
-        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", desc)
-        
-        edu_dict = edu.model_dump()
-        edu_dict["vector_id"] = vector_id
-        data_dict["education"].append(edu_dict)
+    for idx, edu in enumerate(data_dict["education"]):
+        edu["vector_id"] = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.get("description", ""))
 
-    for idx, proj in enumerate(candidate_data.projects):
-        desc = getattr(proj, "description", "") or getattr(proj, "name", "")
-        vector_id = generate_and_store_embedding(candidate_slug, f"proj_{idx}", desc)
+    for idx, proj in enumerate(data_dict["projects"]):
+        proj["vector_id"] = generate_and_store_embedding(candidate_slug, f"proj_{idx}", proj.get("description", ""))
         
-        proj_dict = proj.model_dump()
-        proj_dict["vector_id"] = vector_id
-        data_dict["projects"].append(proj_dict)
-        
-    for idx, pub in enumerate(candidate_data.publications):
-        desc = getattr(pub, "description", "") or getattr(pub, "title", "")
-        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", desc)
-        
-        pub_dict = pub.model_dump()
-        pub_dict["vector_id"] = vector_id
-        data_dict["publications"].append(pub_dict)
+    for idx, pub in enumerate(data_dict["publications"]):
+        pub["vector_id"] = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.get("description", "") or pub.get("title", ""))
+
+    for idx, crs in enumerate(data_dict["courses"]):
+        crs["vector_id"] = generate_and_store_embedding(candidate_slug, f"course_{idx}", crs.get("description", "") or crs.get("title", ""))
+
+    for idx, pat in enumerate(data_dict["patents"]):
+        pat["vector_id"] = generate_and_store_embedding(candidate_slug, f"patent_{idx}", pat.get("description", "") or pat.get("title", ""))
 
     graph = create_rdf_graph(data_dict)
     upload_to_graphdb(graph)
-    
     return graph.serialize(format="turtle")
 
+
 async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
+    """Takes a strictly structured Pydantic model and inserts it into ChromaDB and GraphDB."""
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
-    
-    data_dict = {
-        "name": candidate_data.name,
-        "phone_mobile": candidate_data.phone_mobile,
-        "phone_home": candidate_data.phone_home,
-        "phone_work": candidate_data.phone_work,
-        "jobs": [],
-        "education": [],
-        "projects": [],
-        "publications": [],
-        "technical_skills": candidate_data.technical_skills,
-        "languages": [l.model_dump() for l in candidate_data.languages],
-        "target": candidate_data.target.model_dump(),
-        "address": candidate_data.address.model_dump() if candidate_data.address else None,
-        "websites": [w.model_dump() for w in candidate_data.websites],
-        "honors": [h.model_dump() for h in candidate_data.honors],
-        "references": [r.model_dump() for r in candidate_data.references]
-    }
+    data_dict = candidate_data.model_dump()
 
-    for idx, job in enumerate(candidate_data.jobs):
-        raw_skills = getattr(job, "raw_skills", [])
-        esco_uris = [map_to_esco_uri(s) for s in raw_skills if map_to_esco_uri(s)]
-        
-        desc = getattr(job, "description", "") or ""
-        vector_id = generate_and_store_embedding(candidate_slug, f"job_{idx}", desc)
-        
-        job_dict = job.model_dump()
-        job_dict["esco_skill_uris"] = esco_uris
-        job_dict["vector_id"] = vector_id
-        data_dict["jobs"].append(job_dict)
+    # --- VECTOR & ESCO MAPPING FOR JOBS ---
+    for idx, job in enumerate(data_dict["jobs"]):
+        job["esco_skill_uris"] = [map_to_esco_uri(s) for s in job.get("raw_skills", []) if map_to_esco_uri(s)]
+        job["vector_id"] = generate_and_store_embedding(candidate_slug, f"job_{idx}", job.get("description", ""))
 
-    for idx, edu in enumerate(candidate_data.education):
-        desc = getattr(edu, "description", "") or ""
-        vector_id = generate_and_store_embedding(candidate_slug, f"edu_{idx}", desc)
-        
-        edu_dict = edu.model_dump()
-        edu_dict["vector_id"] = vector_id
-        data_dict["education"].append(edu_dict)
+    # --- VECTOR MAPPING FOR EDUCATION ---
+    for idx, edu in enumerate(data_dict["education"]):
+        edu["vector_id"] = generate_and_store_embedding(candidate_slug, f"edu_{idx}", edu.get("description", ""))
 
-    for idx, proj in enumerate(candidate_data.projects):
-        desc = getattr(proj, "description", "") or getattr(proj, "name", "")
-        vector_id = generate_and_store_embedding(candidate_slug, f"proj_{idx}", desc)
+    # --- VECTOR MAPPING FOR PROJECTS ---
+    for idx, proj in enumerate(data_dict["projects"]):
+        proj["vector_id"] = generate_and_store_embedding(candidate_slug, f"proj_{idx}", proj.get("description", ""))
         
-        proj_dict = proj.model_dump()
-        proj_dict["vector_id"] = vector_id
-        data_dict["projects"].append(proj_dict)
-        
-    for idx, pub in enumerate(candidate_data.publications):
-        desc = getattr(pub, "description", "") or getattr(pub, "title", "")
-        vector_id = generate_and_store_embedding(candidate_slug, f"pub_{idx}", desc)
-        
-        pub_dict = pub.model_dump()
-        pub_dict["vector_id"] = vector_id
-        data_dict["publications"].append(pub_dict)
+    # --- VECTOR MAPPING FOR PUBLICATIONS ---
+    for idx, pub in enumerate(data_dict["publications"]):
+        pub["vector_id"] = generate_and_store_embedding(candidate_slug, f"pub_{idx}", pub.get("description", "") or pub.get("title", ""))
 
+    # --- VECTOR MAPPING FOR COURSES ---
+    for idx, crs in enumerate(data_dict["courses"]):
+        crs["vector_id"] = generate_and_store_embedding(candidate_slug, f"course_{idx}", crs.get("description", "") or crs.get("title", ""))
+
+    # --- VECTOR MAPPING FOR PATENTS ---
+    for idx, pat in enumerate(data_dict["patents"]):
+        pat["vector_id"] = generate_and_store_embedding(candidate_slug, f"patent_{idx}", pat.get("description", "") or pat.get("title", ""))
+
+    # Generate and Upload!
     graph = create_rdf_graph(data_dict)
     upload_to_graphdb(graph)
     
