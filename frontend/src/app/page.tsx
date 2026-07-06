@@ -16,11 +16,13 @@ export default function Home() {
   const [latexCode, setLatexCode] = useState('');
   
   const [profileData, setProfileData] = useState({
+    phone_mobile: '', phone_home: '', phone_work: '',
     city: '', country: '',
     technical_skills: [{ name: '' }],
     languages: [{ name: '', proficiency: '' }],
     experiences: [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '', career_level: '', job_type: '' }],
     education: [{ degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' }],
+    projects: [{ name: '', role: '', start_date: '', end_date: '', url: '', creator: '', description: '', is_current: false }],
     publications: [{ title: '', publisher: '', date: '', description: '' }],
     websites: [{ url: '', website_type: '' }],
     honors: [{ title: '', issuer: '', date: '' }],
@@ -52,6 +54,9 @@ export default function Home() {
       const data = await response.json();
       
       setProfileData({
+        phone_mobile: data.phone_mobile || '',
+        phone_home: data.phone_home || '',
+        phone_work: data.phone_work || '',
         city: data.address?.city || '',
         country: data.address?.country || '',
         technical_skills: data.skills?.length 
@@ -69,7 +74,7 @@ export default function Home() {
               career_level: job.career_level || '',
               job_type: job.job_type || '',
               raw_skills: '', 
-              description: ''
+              description: job.description || '' 
             })) 
           : [{ company_name: '', job_title: '', start_date: '', end_date: '', raw_skills: '', description: '', career_level: '', job_type: '' }],
         education: data.education && Object.keys(data.education).length 
@@ -79,9 +84,21 @@ export default function Home() {
               start_date: edu.start_date || '', 
               end_date: edu.end_date || '', 
               field_of_study: '', 
-              description: ''
+              description: edu.description || ''
             })) 
           : [{ degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' }],
+        projects: data.projects?.length 
+          ? data.projects.map((proj: any) => ({
+              name: proj.name || '',
+              role: proj.role || '',
+              start_date: proj.start_date || '',
+              end_date: proj.end_date || '',
+              url: proj.url || '',
+              creator: proj.creator || '',
+              description: proj.description || '',
+              is_current: proj.is_current || false
+            }))
+          : [{ name: '', role: '', start_date: '', end_date: '', url: '', creator: '', description: '', is_current: false }],
         publications: data.publications?.length 
           ? data.publications.map((pub: any) => ({
               title: pub.title || '', 
@@ -115,7 +132,7 @@ export default function Home() {
     setProfileData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (category: keyof typeof profileData, index: number, field: string, value: string) => {
+  const handleArrayChange = (category: keyof typeof profileData, index: number, field: string, value: any) => {
     const updatedArray = [...(profileData[category] as any[])];
     updatedArray[index][field] = value;
     setProfileData(prev => ({ ...prev, [category]: updatedArray }));
@@ -132,6 +149,9 @@ export default function Home() {
   const buildCompletePayload = () => {
     return {
       name: candidateName,
+      phone_mobile: profileData.phone_mobile,
+      phone_home: profileData.phone_home,
+      phone_work: profileData.phone_work,
       experiences: profileData.experiences.filter(e => e.company_name).map(exp => ({
         ...exp,
         raw_skills: typeof exp.raw_skills === 'string' 
@@ -139,6 +159,7 @@ export default function Home() {
             : exp.raw_skills
       })),
       education: profileData.education.filter(e => e.degree),
+      projects: profileData.projects.filter(p => p.name),
       publications: profileData.publications.filter(p => p.title),
       technical_skills: profileData.technical_skills.filter(s => s.name.trim()).map(s => s.name.trim()),
       languages: profileData.languages.filter(l => l.name),
@@ -264,6 +285,25 @@ export default function Home() {
              </div>
            ) : (
              <div className="space-y-8 h-[600px] overflow-y-auto pr-4">
+               {/* Contact */}
+               <div className="p-4 bg-gray-50 border rounded-md">
+                 <h3 className="font-semibold mb-3 border-b pb-2">Contact Details</h3>
+                 <div className="grid grid-cols-3 gap-4 mb-2">
+                    <div>
+                        <label className="block text-xs font-medium">Mobile Phone</label>
+                        <input type="text" name="phone_mobile" value={profileData.phone_mobile} onChange={handleBaseChange} className="w-full p-2 text-sm border rounded" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium">Home Phone</label>
+                        <input type="text" name="phone_home" value={profileData.phone_home} onChange={handleBaseChange} className="w-full p-2 text-sm border rounded" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium">Work Phone</label>
+                        <input type="text" name="phone_work" value={profileData.phone_work} onChange={handleBaseChange} className="w-full p-2 text-sm border rounded" />
+                    </div>
+                 </div>
+               </div>
+
                {/* Work Experience */}
                <div className="p-4 bg-gray-50 border rounded-md">
                  <h3 className="font-semibold mb-3 border-b pb-2">Work Experience</h3>
@@ -304,6 +344,30 @@ export default function Home() {
                    </div>
                  ))}
                  <button onClick={() => addRow('education', { degree: '', institution: '', start_date: '', end_date: '', field_of_study: '', description: '' })} className="mt-2 text-sm text-blue-600 font-medium">+ Add Education</button>
+               </div>
+
+               {/* Projects */}
+               <div className="p-4 bg-gray-50 border rounded-md">
+                 <h3 className="font-semibold mb-3 border-b pb-2">Projects</h3>
+                 {profileData.projects.map((proj, idx) => (
+                   <div key={idx} className="mb-6 p-4 bg-white border rounded relative">
+                     <button onClick={() => removeRow('projects', idx)} className="absolute top-1 right-1 px-2 py-1 bg-red-100 text-red-600 rounded text-xs hover:bg-red-200">Remove</button>
+                     <div className="grid grid-cols-2 gap-4 mb-2">
+                       <div><label className="block text-xs font-medium">Name</label><input type="text" value={proj.name} onChange={(e) => handleArrayChange('projects', idx, 'name', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">Role</label><input type="text" value={proj.role} onChange={(e) => handleArrayChange('projects', idx, 'role', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">Start Date</label><input type="text" value={proj.start_date} onChange={(e) => handleArrayChange('projects', idx, 'start_date', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">End Date</label><input type="text" value={proj.end_date} onChange={(e) => handleArrayChange('projects', idx, 'end_date', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">Creator</label><input type="text" value={proj.creator} onChange={(e) => handleArrayChange('projects', idx, 'creator', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                       <div><label className="block text-xs font-medium">URL</label><input type="text" value={proj.url} onChange={(e) => handleArrayChange('projects', idx, 'url', e.target.value)} className="w-full p-2 text-sm border rounded" /></div>
+                     </div>
+                     <div className="flex items-center gap-2 mb-2">
+                         <input type="checkbox" checked={proj.is_current} onChange={(e) => handleArrayChange('projects', idx, 'is_current', e.target.checked)} className="h-4 w-4 text-blue-600" />
+                         <label className="text-xs font-medium">Current Project</label>
+                     </div>
+                     <div><label className="block text-xs font-medium">Description</label><textarea value={proj.description} onChange={(e) => handleArrayChange('projects', idx, 'description', e.target.value)} rows={3} className="w-full p-2 text-sm border rounded" /></div>
+                   </div>
+                 ))}
+                 <button onClick={() => addRow('projects', { name: '', role: '', start_date: '', end_date: '', url: '', creator: '', description: '', is_current: false })} className="mt-2 text-sm text-blue-600 font-medium">+ Add Project</button>
                </div>
              </div>
            )}

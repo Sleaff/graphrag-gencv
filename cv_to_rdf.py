@@ -7,14 +7,13 @@ import json
 
 # --- 1. ESCO Mapping Bridge ---
 def map_to_esco_uri(skill_name: str) -> str | None:
-    """Temporary mock mapper for ESCO URIs."""
     esco_database = {
         "python": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
         "machine learning": "http://data.europa.eu/esco/skill/3a2d5b45-56e4-4f5a-a55a-4a4a65afdc43",
         "natural language processing": "http://data.europa.eu/esco/skill/fff0e2cd-d0bd-4b02-9daf-158b79d9688a",
         "docker": "http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17",
         "sparql": "http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3",
-        "fastapi": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e", # Fallback
+        "fastapi": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
         "software developer": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1"
     }
     return esco_database.get(skill_name.lower().strip())
@@ -43,6 +42,16 @@ class Education(BaseModel):
     end_date: str 
     field_of_study: Optional[str] = None 
     description: Optional[str] = None 
+
+class Project(BaseModel):
+    name: str
+    role: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+    creator: Optional[str] = None
+    is_current: bool = False
 
 class Language(BaseModel):
     name: str
@@ -74,8 +83,12 @@ class Publication(BaseModel):
 
 class CandidateProfile(BaseModel):
     name: str 
+    phone_mobile: Optional[str] = None
+    phone_home: Optional[str] = None
+    phone_work: Optional[str] = None
     jobs: List[Job] 
     education: List[Education] 
+    projects: List[Project] = Field(default_factory=list)
     technical_skills: List[str] 
     languages: List[Language] 
     target: Target 
@@ -88,19 +101,22 @@ class CandidateProfile(BaseModel):
     class Config:
         populate_by_name = True
 
+# --- 3. Main Pipeline ---
 async def map_cv_to_rdf(cv_markdown: str) -> str:
-    """Passes the entire markdown to the LLM for strict Pydantic extraction."""
-    
     messages = [
         ChatMessage(
             role="system", 
             content="""You are an expert HR parser. Extract the full profile data.
-IMPORTANT: For the job 'description', extract the description of the main activities and responsibilities in the held position. Do NOT include descriptions of the company itself.
+IMPORTANT: For the job 'description', ONLY extract the description of the main activities and responsibilities in the held position. Do NOT include descriptions of the company itself.
 Return ONLY a valid JSON object matching this schema exactly:
 {
     "name": "full name",
+    "phone_mobile": "...",
+    "phone_home": "...",
+    "phone_work": "...",
     "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "career_level": "...", "job_type": "...", "raw_skills": ["..."], "description": "...", "is_current": false}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],
+    "projects": [{"name": "...", "role": "...", "start_date": "...", "end_date": "...", "description": "...", "url": "...", "creator": "...", "is_current": false}],
     "technical_skills": ["skill1", "skill2"],
     "languages": [{"name": "...", "proficiency": "..."}],
     "target": {"job_title": "...", "job_mode": "...", "relocate": true, "travel": true},
@@ -132,8 +148,12 @@ Return ONLY a valid JSON object matching this schema exactly:
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
     data_dict = {
         "name": candidate_data.name,
+        "phone_mobile": candidate_data.phone_mobile,
+        "phone_home": candidate_data.phone_home,
+        "phone_work": candidate_data.phone_work,
         "jobs": [],
         "education": [],
+        "projects": [],
         "publications": [],
         "technical_skills": candidate_data.technical_skills,
         "languages": [l.model_dump() for l in candidate_data.languages],
@@ -163,6 +183,14 @@ Return ONLY a valid JSON object matching this schema exactly:
         edu_dict = edu.model_dump()
         edu_dict["vector_id"] = vector_id
         data_dict["education"].append(edu_dict)
+
+    for idx, proj in enumerate(candidate_data.projects):
+        desc = getattr(proj, "description", "") or getattr(proj, "name", "")
+        vector_id = generate_and_store_embedding(candidate_slug, f"proj_{idx}", desc)
+        
+        proj_dict = proj.model_dump()
+        proj_dict["vector_id"] = vector_id
+        data_dict["projects"].append(proj_dict)
         
     for idx, pub in enumerate(candidate_data.publications):
         desc = getattr(pub, "description", "") or getattr(pub, "title", "")
@@ -182,8 +210,12 @@ async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
     
     data_dict = {
         "name": candidate_data.name,
+        "phone_mobile": candidate_data.phone_mobile,
+        "phone_home": candidate_data.phone_home,
+        "phone_work": candidate_data.phone_work,
         "jobs": [],
         "education": [],
+        "projects": [],
         "publications": [],
         "technical_skills": candidate_data.technical_skills,
         "languages": [l.model_dump() for l in candidate_data.languages],
@@ -213,6 +245,14 @@ async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
         edu_dict = edu.model_dump()
         edu_dict["vector_id"] = vector_id
         data_dict["education"].append(edu_dict)
+
+    for idx, proj in enumerate(candidate_data.projects):
+        desc = getattr(proj, "description", "") or getattr(proj, "name", "")
+        vector_id = generate_and_store_embedding(candidate_slug, f"proj_{idx}", desc)
+        
+        proj_dict = proj.model_dump()
+        proj_dict["vector_id"] = vector_id
+        data_dict["projects"].append(proj_dict)
         
     for idx, pub in enumerate(candidate_data.publications):
         desc = getattr(pub, "description", "") or getattr(pub, "title", "")

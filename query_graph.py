@@ -12,11 +12,16 @@ def get_candidate_profile(candidate_name: str):
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     
-    SELECT ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?skillName ?degree ?institution ?langName ?langProf ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
+    SELECT ?phoneMobile ?phoneHome ?phoneWork ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?projName ?projRole ?projStart ?projEnd ?projDesc ?projCreator ?projUrl ?projCurrent ?skillName ?degree ?institution ?langName ?langProf ?eduStart ?eduGrad ?targetTitle ?relocate ?travel ?city ?country ?url ?type ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?refName ?refRel    WHERE {{
         ?cv a my0:CV ;
             my0:aboutPerson ?person .
         ?person my0:firstName "{candidate_name}" .
         
+        # Person Details
+        OPTIONAL {{ ?person my0:phoneNumberMobile ?phoneMobile . }}
+        OPTIONAL {{ ?person my0:phoneNumberHome ?phoneHome . }}
+        OPTIONAL {{ ?person my0:phoneNumberWork ?phoneWork . }}
+
         # Jobs
         OPTIONAL {{
             ?cv my0:hasWorkHistory ?job .
@@ -39,6 +44,19 @@ def get_candidate_profile(candidate_name: str):
             
             OPTIONAL {{ ?edu my0:eduStartDate ?eduStart . }}
             OPTIONAL {{ ?edu my0:eduGradDate ?eduGrad . }}
+        }}
+
+        # Projects
+        OPTIONAL {{
+            ?cv my0:hasProject ?proj .
+            ?proj my0:projectName ?projName .
+            OPTIONAL {{ ?proj my0:projectRole ?projRole . }}
+            OPTIONAL {{ ?proj my0:projectStartDate ?projStart . }}
+            OPTIONAL {{ ?proj my0:projectEndDate ?projEnd . }}
+            OPTIONAL {{ ?proj my0:projectDescription ?projDesc . }}
+            OPTIONAL {{ ?proj my0:projectCreator ?projCreator . }}
+            OPTIONAL {{ ?proj my0:projectURL ?projUrl . }}
+            OPTIONAL {{ ?proj my0:projectIsCurrent ?projCurrent . }}
         }}
         
         # Skills
@@ -109,8 +127,12 @@ def get_candidate_profile(candidate_name: str):
     
     profile = {
         "name": candidate_name,
+        "phone_mobile": "",
+        "phone_home": "",
+        "phone_work": "",
         "jobs": {}, 
         "education": {},
+        "projects": [],
         "skills": set(),
         "languages": {},
         "target": None,
@@ -122,6 +144,13 @@ def get_candidate_profile(candidate_name: str):
     }
     
     for row in results["results"]["bindings"]:
+        if "phoneMobile" in row and not profile["phone_mobile"]:
+            profile["phone_mobile"] = row["phoneMobile"]["value"]
+        if "phoneHome" in row and not profile["phone_home"]:
+            profile["phone_home"] = row["phoneHome"]["value"]
+        if "phoneWork" in row and not profile["phone_work"]:
+            profile["phone_work"] = row["phoneWork"]["value"]
+
         if "jobTitle" in row:
             job_key = row["jobTitle"]["value"] + row["companyName"]["value"]
             profile["jobs"][job_key] = {
@@ -142,6 +171,20 @@ def get_candidate_profile(candidate_name: str):
                 "start_date": row.get("eduStart", {}).get("value", "N/A"),
                 "end_date": row.get("eduGrad", {}).get("value", "N/A")
             }
+
+        if "projName" in row:
+            proj_entry = {
+                "name": row["projName"]["value"],
+                "role": row.get("projRole", {}).get("value", ""),
+                "start_date": row.get("projStart", {}).get("value", ""),
+                "end_date": row.get("projEnd", {}).get("value", ""),
+                "description": row.get("projDesc", {}).get("value", ""),
+                "creator": row.get("projCreator", {}).get("value", ""),
+                "url": row.get("projUrl", {}).get("value", ""),
+                "is_current": row.get("projCurrent", {}).get("value", "false").lower() == "true"
+            }
+            if proj_entry not in profile["projects"]:
+                profile["projects"].append(proj_entry)
             
         if "skillName" in row:
             profile["skills"].add(row["skillName"]["value"])
@@ -200,8 +243,12 @@ def get_candidate_profile(candidate_name: str):
 
     return {
         "name": candidate_name,
+        "phone_mobile": profile["phone_mobile"],
+        "phone_home": profile["phone_home"],
+        "phone_work": profile["phone_work"],
         "jobs": list(profile["jobs"].values()),
         "education": list(profile["education"].values()),
+        "projects": profile["projects"],
         "skills": list(profile["skills"]),
         "languages": list(profile["languages"].values()),
         "target": profile["target"],
