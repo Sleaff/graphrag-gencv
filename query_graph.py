@@ -1,8 +1,7 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 import json
 from collections import defaultdict
-
-GRAPHDB_URL = "http://localhost:7200/repositories/ResumeGraph"
+from settings import GRAPHDB_URL
 
 def get_candidate_profile(candidate_name: str):
     sparql = SPARQLWrapper(GRAPHDB_URL)
@@ -16,12 +15,12 @@ def get_candidate_profile(candidate_name: str):
         ?gender ?nationality ?dob ?driverLicence ?shortDesc ?longDesc 
         ?phoneMobile ?phoneHome ?phoneWork 
         ?imName ?imUsername 
-        ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType 
+        ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?jobSkillUri ?jobSkillName ?jobParentLabel
         ?degree ?institution ?eduStart ?eduGrad ?eduDesc 
         ?crsTitle ?crsDesc ?crsUrl ?crsStart ?crsEnd ?crsCert ?crsOrg 
         ?patTitle ?patOffice ?patNum ?patInv ?patUrl ?patDesc ?patDate ?patStatus 
         ?projName ?projRole ?projStart ?projEnd ?projDesc ?projCreator ?projUrl ?projCurrent 
-        ?skillName ?langName ?langProf 
+        ?skillUri ?skillName ?parentLabel ?langName ?langProf 
         ?targetTitle ?relocate ?travel ?city ?country ?url ?type 
         ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?pDesc ?refName ?refRel 
         ?otherType ?otherDesc
@@ -55,6 +54,16 @@ def get_candidate_profile(candidate_name: str):
             OPTIONAL {{ ?job my0:jobDescription ?jobDescription . }}
             OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
             OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
+            
+            # UPDATED: Added skos:broader parent label traversal for job skills
+            OPTIONAL {{ 
+                ?job my0:hasSkill ?jobSkillUri .
+                OPTIONAL {{ ?jobSkillUri my0:skillName ?jobSkillName . }}
+                OPTIONAL {{ 
+                    ?jobSkillUri skos:broader ?jobParentUri .
+                    ?jobParentUri rdfs:label ?jobParentLabel .
+                }}
+            }}
         }}
         
         OPTIONAL {{
@@ -101,7 +110,15 @@ def get_candidate_profile(candidate_name: str):
             OPTIONAL {{ ?proj my0:projectIsCurrent ?projCurrent . }}
         }}
         
-        OPTIONAL {{ ?cv my0:hasSkill ?skillUri . ?skillUri my0:skillName ?skillName . }}
+        OPTIONAL {{ 
+            ?cv my0:hasSkill ?skillUri . 
+            OPTIONAL {{ ?skillUri my0:skillName ?skillName . }}
+            OPTIONAL {{ 
+                ?skillUri skos:broader ?parentUri .
+                ?parentUri rdfs:label ?parentLabel .
+            }}
+        }}
+        
         OPTIONAL {{
             ?person my0:hasSkill ?lang . ?lang a my0:LanguageSkill ; my0:skillName ?langName .
             OPTIONAL {{ ?lang my0:languageSkillProficiency ?profObj . ?profObj rdfs:label ?langProf . }}
@@ -136,7 +153,7 @@ def get_candidate_profile(candidate_name: str):
         "courses": [], 
         "patents": [], 
         "projects": [], 
-        "skills": set(), 
+        "skills": {},
         "languages": {},
         "target": None, 
         "address": None, 
@@ -172,15 +189,31 @@ def get_candidate_profile(candidate_name: str):
         # Jobs
         if "jobTitle" in row:
             job_key = row["jobTitle"]["value"] + row["companyName"]["value"]
-            profile["jobs"][job_key] = {
-                "title": row["jobTitle"]["value"],
-                "company": row["companyName"]["value"],
-                "start": row["startDate"]["value"],
-                "end": row.get("endDate", {}).get("value", "Present"),
-                "description": row.get("jobDescription", {}).get("value", ""),
-                "career_level": row.get("careerLevel", {}).get("value", ""),
-                "job_type": row.get("jobType", {}).get("value", "")
-            }
+            if job_key not in profile["jobs"]:
+                profile["jobs"][job_key] = {
+                    "title": row["jobTitle"]["value"],
+                    "company": row["companyName"]["value"],
+                    "start": row["startDate"]["value"],
+                    "end": row.get("endDate", {}).get("value", "Present"),
+                    "description": row.get("jobDescription", {}).get("value", ""),
+                    "career_level": row.get("careerLevel", {}).get("value", ""),
+                    "job_type": row.get("jobType", {}).get("value", ""),
+                    "raw_skills": {}
+                }
+            if "jobSkillUri" in row:
+                j_uri = row["jobSkillUri"]["value"]
+                j_name = row.get("jobSkillName", {}).get("value", j_uri.split("/")[-1])
+                
+                # create the skill object if it doesn't exist for this job
+                if j_name not in profile["jobs"][job_key]["raw_skills"]:
+                    profile["jobs"][job_key]["raw_skills"][j_name] = {
+                        "name": j_name,
+                        # "uri": j_uri,         # not needed for cv generation
+                        "parents": set()
+                    }
+                
+                if "jobParentLabel" in row:
+                    profile["jobs"][job_key]["raw_skills"][j_name]["parents"].add(row["jobParentLabel"]["value"])
         
         # Education
         if "degree" in row:
@@ -255,10 +288,22 @@ def get_candidate_profile(candidate_name: str):
             if other_entry not in profile["other_info"]:
                 profile["other_info"].append(other_entry)
             
-        # Skills & Languages
-        if "skillName" in row:
-            profile["skills"].add(row["skillName"]["value"])
+        # Global Technical Skills
+        if "skillUri" in row:
+            uri = row["skillUri"]["value"]
+            skill_name = row.get("skillName", {}).get("value", uri.split("/")[-1])
             
+            if skill_name not in profile["skills"]:
+                profile["skills"][skill_name] = {
+                    "name": skill_name,
+                    # "uri": uri,  # not needed for cv generation
+                    "parents": set()
+                }
+            
+            if "parentLabel" in row:
+                profile["skills"][skill_name]["parents"].add(row["parentLabel"]["value"])
+        
+        # Languages
         if "langName" in row:
             lang_name = row["langName"]["value"]
             profile["languages"][lang_name] = {
@@ -317,7 +362,16 @@ def get_candidate_profile(candidate_name: str):
             if ref_entry not in profile["references"]:
                 profile["references"].append(ref_entry)
 
-    # Convert sets and dict mappings back to lists
+    # Convert sets to lists globally
+    for skill in profile["skills"].values():
+        skill["parents"] = list(skill["parents"])
+        
+    # Convert sets to lists for job skills
+    for job in profile["jobs"].values():
+        for skill in job["raw_skills"].values():
+            skill["parents"] = list(skill["parents"])
+        job["raw_skills"] = list(job["raw_skills"].values())
+
     return {
         "name": candidate_name,
         "gender": profile["gender"], 
@@ -334,7 +388,7 @@ def get_candidate_profile(candidate_name: str):
         "courses": profile["courses"], 
         "patents": profile["patents"], 
         "projects": profile["projects"],
-        "skills": list(profile["skills"]), 
+        "skills": list(profile["skills"].values()),
         "languages": list(profile["languages"].values()), 
         "target": profile["target"],
         "address": profile["address"], 

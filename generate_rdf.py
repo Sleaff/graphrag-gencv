@@ -1,15 +1,15 @@
 from loguru import logger
 import re
 from rdflib import Graph, Literal, Namespace, RDF, URIRef
-from rdflib.namespace import XSD, RDFS
+from rdflib.namespace import XSD, RDFS, SKOS
 from SPARQLWrapper import SPARQLWrapper, POST
+from settings import GRAPHDB_URL
 
 MY0 = Namespace("http://example.com/resume2rdf_ontology.rdf#")
 MYVALUE0 = Namespace("http://example.com/resume2rdf_value_ontology.rdf#")
 ESCO = Namespace("http://data.europa.eu/esco/model#")
 COUNTRY = Namespace("http://www.bpiresearch.com/BPMO/2004/03/03/cdl/Countries#")
-
-GRAPHDB_URL = "http://localhost:7200/repositories/ResumeGraph/statements"
+GRAPHDB_URL = GRAPHDB_URL + "/statements"
 
 def sanitize_uri_string(text: str) -> str:
     if not text: return "unknown"
@@ -31,7 +31,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     g.add((person_uri, RDF.type, MY0.Person))
     g.add((person_uri, MY0.firstName, Literal(candidate_data.get("name", ""), datatype=XSD.string)))
     
-    # --- Person Demographics & Descriptions ---
     if candidate_data.get("gender"):
         gen_uri = URIRef(f"http://example.com/data/gender_{sanitize_uri_string(candidate_data['gender'])}")
         g.add((person_uri, MY0.gender, gen_uri))
@@ -50,7 +49,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     if candidate_data.get("long_description"):
         g.add((person_uri, MY0.personLongDescription, Literal(candidate_data["long_description"], datatype=XSD.string)))
 
-    # --- Contact / Phones ---
     if candidate_data.get("phone_mobile"):
         g.add((person_uri, MY0.phoneNumberMobile, Literal(candidate_data["phone_mobile"], datatype=XSD.string)))
     if candidate_data.get("phone_home"):
@@ -58,7 +56,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     if candidate_data.get("phone_work"):
         g.add((person_uri, MY0.phoneNumberWork, Literal(candidate_data["phone_work"], datatype=XSD.string)))
     
-    # --- Jobs ---
     for idx, job in enumerate(candidate_data.get("jobs", [])):
         work_uri = URIRef(f"http://example.com/data/work_{candidate_slug}_{idx}")
         company_name = job.get("company", "Unknown") 
@@ -77,6 +74,19 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((company_uri, RDF.type, MY0.Company))
         g.add((company_uri, MY0.orgName, Literal(company_name, datatype=XSD.string)))
 
+        for skill_dict in job.get("esco_skills", []):
+            skill_name = skill_dict.get("name", "")
+            esco_data = skill_dict.get("esco_data")
+            
+            if esco_data and esco_data.get("uri"):
+                g.add((work_uri, MY0.hasSkill, URIRef(esco_data["uri"])))
+                g.add((URIRef(esco_data["uri"]), MY0.skillName, Literal(skill_name, datatype=XSD.string)))
+            else:
+                custom_skill_uri = URIRef(f"http://example.com/data/custom_skill_{candidate_slug}_{sanitize_uri_string(skill_name)}")
+                g.add((work_uri, MY0.hasSkill, custom_skill_uri))
+                g.add((custom_skill_uri, RDF.type, MY0.Skill))
+                g.add((custom_skill_uri, MY0.skillName, Literal(skill_name, datatype=XSD.string)))
+
         if job.get("career_level"):
             cl_str = job.get("career_level")
             cl_uri = URIRef(f"http://example.com/data/careerlevel_{sanitize_uri_string(cl_str)}")
@@ -92,7 +102,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         if job.get("vector_id"):
             g.add((work_uri, MY0.hasVectorReference, Literal(job["vector_id"], datatype=XSD.string)))
 
-    # --- Education ---
     for idx, edu in enumerate(candidate_data.get("education", [])):
         edu_uri = URIRef(f"http://example.com/data/edu_{candidate_slug}_{idx}")
         org_uri = URIRef(f"http://example.com/data/uni_{sanitize_uri_string(edu.get('institution', ''))}")
@@ -113,7 +122,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
             g.add((deg_uri, RDF.type, MYVALUE0.EduDegree))
             g.add((deg_uri, RDFS.label, Literal(edu["degree"], datatype=XSD.string)))
 
-    # --- Courses ---
     for idx, crs in enumerate(candidate_data.get("courses", [])):
         crs_uri = URIRef(f"http://example.com/data/course_{candidate_slug}_{idx}")
         g.add((cv_uri, MY0.hasCourse, crs_uri))
@@ -134,7 +142,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
             g.add((org_uri, RDF.type, MY0.Organization))
             g.add((org_uri, MY0.orgName, Literal(crs["organized_by"], datatype=XSD.string)))
 
-    # --- Patents ---
     for idx, pat in enumerate(candidate_data.get("patents", [])):
         pat_uri = URIRef(f"http://example.com/data/patent_{candidate_slug}_{idx}")
         g.add((cv_uri, MY0.hasPatent, pat_uri))
@@ -158,7 +165,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
             g.add((stat_uri, RDF.type, MYVALUE0.StatusProperty))
             g.add((stat_uri, RDFS.label, Literal(pat["status"], datatype=XSD.string)))
 
-    # --- Projects ---
     for idx, proj in enumerate(candidate_data.get("projects", [])):
         proj_uri = URIRef(f"http://example.com/data/proj_{candidate_slug}_{idx}")
         g.add((cv_uri, MY0.hasProject, proj_uri))
@@ -178,12 +184,30 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         if proj.get("description"):
             g.add((proj_uri, MY0.projectDescription, Literal(proj.get("description", ""), datatype=XSD.string)))
 
-    # --- Skills & Languages ---
-    for idx, skill_name in enumerate(candidate_data.get("technical_skills", [])):
-        skill_uri = URIRef(f"http://example.com/data/skill_{candidate_slug}_{idx}")
-        g.add((cv_uri, MY0.hasSkill, skill_uri))
-        g.add((skill_uri, RDF.type, MY0.Skill))
-        g.add((skill_uri, MY0.skillName, Literal(skill_name, datatype=XSD.string)))
+    for skill_dict in candidate_data.get("technical_skills", []):
+        skill_name = skill_dict.get("name", "")
+        esco_data = skill_dict.get("esco_data")
+
+        if esco_data and esco_data.get("uri"):
+            # link the CV directly to the ESCO URI
+            esco_uri = URIRef(esco_data["uri"])
+            g.add((cv_uri, MY0.hasSkill, esco_uri))
+            g.add((esco_uri, MY0.skillName, Literal(skill_name, datatype=XSD.string)))
+            
+            # materialize the parent hierarchy
+            for parent_label in esco_data.get("parents", []):
+                parent_uri = URIRef(f"http://example.com/data/category_{sanitize_uri_string(parent_label)}")
+                # link the ESCO skill to its parent category
+                g.add((esco_uri, SKOS.broader, parent_uri))
+                g.add((parent_uri, RDF.type, SKOS.Concept))
+                g.add((parent_uri, RDFS.label, Literal(parent_label, datatype=XSD.string)))
+            
+        else:
+            # unmapped/custom skill
+            custom_skill_uri = URIRef(f"http://example.com/data/custom_skill_{candidate_slug}_{sanitize_uri_string(skill_name)}")
+            g.add((cv_uri, MY0.hasSkill, custom_skill_uri))
+            g.add((custom_skill_uri, RDF.type, MY0.Skill))
+            g.add((custom_skill_uri, MY0.skillName, Literal(skill_name, datatype=XSD.string)))
 
     for idx, lang in enumerate(candidate_data.get("languages", [])):
         lang_uri = URIRef(f"http://example.com/data/lang_{candidate_slug}_{idx}")
@@ -196,7 +220,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
             g.add((prof_uri, RDF.type, MYVALUE0.LanguageSkillProficiencyProperty))
             g.add((prof_uri, RDFS.label, Literal(lang["proficiency"], datatype=XSD.string)))
 
-    # --- Target & Address ---
     target_data = candidate_data.get("target")
     if target_data:
         target_uri = URIRef(f"http://example.com/data/target_{candidate_slug}")
@@ -214,7 +237,6 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((addr_uri, MY0.city, Literal(addr.get("city", ""), datatype=XSD.string)))
         g.add((addr_uri, MY0.country, Literal(addr.get("country", ""), datatype=XSD.string)))
 
-    # --- Arrays: Websites, IMs, Honors, Pubs, References, Other ---
     for idx, site in enumerate(candidate_data.get("websites", [])):
         site_uri = URIRef(f"http://example.com/data/site_{candidate_slug}_{idx}")
         g.add((cv_uri, MY0.hasWebsite, site_uri))

@@ -13,3 +13,6 @@ vector_data/
 # OS & Editor
 .DS_Store
 .vscode/
+
+# etc
+TODO.md
