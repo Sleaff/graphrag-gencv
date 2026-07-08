@@ -1,7 +1,11 @@
 import subprocess
-import os
 
-from designs.texDesign import generateMainDesign1, generateMainDesign2, generateMainDesign3
+from designs.texDesign import (
+    generateMainDesign1,
+    generateMainDesign2,
+    generateMainDesign3,
+)
+
 
 def generate_and_save_pdf(profile, design_choice, language="en"):
     if design_choice == 1:
@@ -16,5 +20,5 @@ def generate_and_save_pdf(profile, design_choice, language="en"):
         f.write(latex_content)
 
     subprocess.run(["pdflatex", "-interaction=nonstopmode", temp_tex], check=True)
-    
+
     return temp_tex.replace(".tex", ".pdf")

@@ -1,11 +1,13 @@
-from SPARQLWrapper import SPARQLWrapper, JSON
 import json
-from collections import defaultdict
+
+from SPARQLWrapper import JSON, SPARQLWrapper
+
 from settings import GRAPHDB_URL
+
 
 def get_candidate_profile(candidate_name: str):
     sparql = SPARQLWrapper(GRAPHDB_URL)
-    
+
     query = f"""
     PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -136,35 +138,35 @@ def get_candidate_profile(candidate_name: str):
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
-    
+
     profile = {
-        "name": candidate_name, 
-        "gender": "", 
-        "nationality": "", 
-        "date_of_birth": "", 
-        "drivers_licence": "", 
-        "short_description": "", 
+        "name": candidate_name,
+        "gender": "",
+        "nationality": "",
+        "date_of_birth": "",
+        "drivers_licence": "",
+        "short_description": "",
         "long_description": "",
-        "phone_mobile": "", 
-        "phone_home": "", 
+        "phone_mobile": "",
+        "phone_home": "",
         "phone_work": "",
-        "jobs": {}, 
-        "education": {}, 
-        "courses": [], 
-        "patents": [], 
-        "projects": [], 
+        "jobs": {},
+        "education": {},
+        "courses": [],
+        "patents": [],
+        "projects": [],
         "skills": {},
         "languages": {},
-        "target": None, 
-        "address": None, 
-        "websites": {}, 
-        "instant_messaging": [], 
-        "honors": [], 
-        "publications": [], 
-        "references": [], 
-        "other_info": []
+        "target": None,
+        "address": None,
+        "websites": {},
+        "instant_messaging": [],
+        "honors": [],
+        "publications": [],
+        "references": [],
+        "other_info": [],
     }
-    
+
     for row in results["results"]["bindings"]:
         # Scalars (Person details)
         if "gender" in row and not profile["gender"]:
@@ -198,23 +200,25 @@ def get_candidate_profile(candidate_name: str):
                     "description": row.get("jobDescription", {}).get("value", ""),
                     "career_level": row.get("careerLevel", {}).get("value", ""),
                     "job_type": row.get("jobType", {}).get("value", ""),
-                    "raw_skills": {}
+                    "raw_skills": {},
                 }
             if "jobSkillUri" in row:
                 j_uri = row["jobSkillUri"]["value"]
                 j_name = row.get("jobSkillName", {}).get("value", j_uri.split("/")[-1])
-                
+
                 # create the skill object if it doesn't exist for this job
                 if j_name not in profile["jobs"][job_key]["raw_skills"]:
                     profile["jobs"][job_key]["raw_skills"][j_name] = {
                         "name": j_name,
                         # "uri": j_uri,         # not needed for cv generation
-                        "parents": set()
+                        "parents": set(),
                     }
-                
+
                 if "jobParentLabel" in row:
-                    profile["jobs"][job_key]["raw_skills"][j_name]["parents"].add(row["jobParentLabel"]["value"])
-        
+                    profile["jobs"][job_key]["raw_skills"][j_name]["parents"].add(
+                        row["jobParentLabel"]["value"]
+                    )
+
         # Education
         if "degree" in row:
             edu_key = row["degree"]["value"] + row["institution"]["value"]
@@ -223,7 +227,7 @@ def get_candidate_profile(candidate_name: str):
                 "institution": row["institution"]["value"],
                 "start_date": row.get("eduStart", {}).get("value", "N/A"),
                 "end_date": row.get("eduGrad", {}).get("value", "N/A"),
-                "description": row.get("eduDesc", {}).get("value", "")
+                "description": row.get("eduDesc", {}).get("value", ""),
             }
 
         # Courses
@@ -235,7 +239,10 @@ def get_candidate_profile(candidate_name: str):
                 "start_date": row.get("crsStart", {}).get("value", ""),
                 "finish_date": row.get("crsEnd", {}).get("value", ""),
                 "organized_by": row.get("crsOrg", {}).get("value", ""),
-                "has_certification": row.get("crsCert", {}).get("value", "false").lower() == "true"
+                "has_certification": row.get("crsCert", {})
+                .get("value", "false")
+                .lower()
+                == "true",
             }
             if crs_entry not in profile["courses"]:
                 profile["courses"].append(crs_entry)
@@ -250,7 +257,7 @@ def get_candidate_profile(candidate_name: str):
                 "url": row.get("patUrl", {}).get("value", ""),
                 "description": row.get("patDesc", {}).get("value", ""),
                 "issued_date": row.get("patDate", {}).get("value", ""),
-                "status": row.get("patStatus", {}).get("value", "")
+                "status": row.get("patStatus", {}).get("value", ""),
             }
             if pat_entry not in profile["patents"]:
                 profile["patents"].append(pat_entry)
@@ -265,7 +272,8 @@ def get_candidate_profile(candidate_name: str):
                 "description": row.get("projDesc", {}).get("value", ""),
                 "creator": row.get("projCreator", {}).get("value", ""),
                 "url": row.get("projUrl", {}).get("value", ""),
-                "is_current": row.get("projCurrent", {}).get("value", "false").lower() == "true"
+                "is_current": row.get("projCurrent", {}).get("value", "false").lower()
+                == "true",
             }
             if proj_entry not in profile["projects"]:
                 profile["projects"].append(proj_entry)
@@ -274,7 +282,7 @@ def get_candidate_profile(candidate_name: str):
         if "imUsername" in row:
             im_entry = {
                 "name": row.get("imName", {}).get("value", "IM"),
-                "username": row["imUsername"]["value"]
+                "username": row["imUsername"]["value"],
             }
             if im_entry not in profile["instant_messaging"]:
                 profile["instant_messaging"].append(im_entry)
@@ -283,32 +291,34 @@ def get_candidate_profile(candidate_name: str):
         if "otherDesc" in row:
             other_entry = {
                 "type": row.get("otherType", {}).get("value", "Misc"),
-                "description": row["otherDesc"]["value"]
+                "description": row["otherDesc"]["value"],
             }
             if other_entry not in profile["other_info"]:
                 profile["other_info"].append(other_entry)
-            
+
         # Global Technical Skills
         if "skillUri" in row:
             uri = row["skillUri"]["value"]
             skill_name = row.get("skillName", {}).get("value", uri.split("/")[-1])
-            
+
             if skill_name not in profile["skills"]:
                 profile["skills"][skill_name] = {
                     "name": skill_name,
                     # "uri": uri,  # not needed for cv generation
-                    "parents": set()
+                    "parents": set(),
                 }
-            
+
             if "parentLabel" in row:
-                profile["skills"][skill_name]["parents"].add(row["parentLabel"]["value"])
-        
+                profile["skills"][skill_name]["parents"].add(
+                    row["parentLabel"]["value"]
+                )
+
         # Languages
         if "langName" in row:
             lang_name = row["langName"]["value"]
             profile["languages"][lang_name] = {
                 "name": lang_name,
-                "proficiency": row.get("langProf", {}).get("value", "")
+                "proficiency": row.get("langProf", {}).get("value", ""),
             }
 
         # Target Data
@@ -316,14 +326,14 @@ def get_candidate_profile(candidate_name: str):
             profile["target"] = {
                 "job_title": row["targetTitle"]["value"],
                 "relocate": row["relocate"]["value"].lower() == "true",
-                "travel": row["travel"]["value"].lower() == "true"
+                "travel": row["travel"]["value"].lower() == "true",
             }
 
         # Address Data
         if "city" in row:
             profile["address"] = {
                 "city": row["city"]["value"],
-                "country": row["country"]["value"]
+                "country": row["country"]["value"],
             }
 
         # Websites
@@ -331,33 +341,30 @@ def get_candidate_profile(candidate_name: str):
             site_key = row["url"]["value"]
             profile["websites"][site_key] = {
                 "url": row["url"]["value"],
-                "website_type": row["type"]["value"]
+                "website_type": row["type"]["value"],
             }
-            
+
         # Honors
         if "hTitle" in row:
             honor_entry = {
                 "title": row["hTitle"]["value"],
                 "issuer": row["hIssuer"]["value"],
-                "date": row["hDate"]["value"]
+                "date": row["hDate"]["value"],
             }
             if honor_entry not in profile["honors"]:
                 profile["honors"].append(honor_entry)
-        
+
         # Publications
         if "pTitle" in row:
-            pub_entry = {
-                "title": row["pTitle"]["value"],
-                "date": row["pDate"]["value"]
-            }
+            pub_entry = {"title": row["pTitle"]["value"], "date": row["pDate"]["value"]}
             if pub_entry not in profile["publications"]:
                 profile["publications"].append(pub_entry)
-        
+
         # References
         if "refName" in row:
             ref_entry = {
                 "name": row["refName"]["value"],
-                "relation": row.get("refRel", {}).get("value", "")
+                "relation": row.get("refRel", {}).get("value", ""),
             }
             if ref_entry not in profile["references"]:
                 profile["references"].append(ref_entry)
@@ -365,7 +372,7 @@ def get_candidate_profile(candidate_name: str):
     # Convert sets to lists globally
     for skill in profile["skills"].values():
         skill["parents"] = list(skill["parents"])
-        
+
     # Convert sets to lists for job skills
     for job in profile["jobs"].values():
         for skill in job["raw_skills"].values():
@@ -374,31 +381,32 @@ def get_candidate_profile(candidate_name: str):
 
     return {
         "name": candidate_name,
-        "gender": profile["gender"], 
-        "nationality": profile["nationality"], 
-        "date_of_birth": profile["date_of_birth"], 
-        "drivers_licence": profile["drivers_licence"], 
-        "short_description": profile["short_description"], 
+        "gender": profile["gender"],
+        "nationality": profile["nationality"],
+        "date_of_birth": profile["date_of_birth"],
+        "drivers_licence": profile["drivers_licence"],
+        "short_description": profile["short_description"],
         "long_description": profile["long_description"],
-        "phone_mobile": profile["phone_mobile"], 
-        "phone_home": profile["phone_home"], 
+        "phone_mobile": profile["phone_mobile"],
+        "phone_home": profile["phone_home"],
         "phone_work": profile["phone_work"],
-        "jobs": list(profile["jobs"].values()), 
+        "jobs": list(profile["jobs"].values()),
         "education": list(profile["education"].values()),
-        "courses": profile["courses"], 
-        "patents": profile["patents"], 
+        "courses": profile["courses"],
+        "patents": profile["patents"],
         "projects": profile["projects"],
         "skills": list(profile["skills"].values()),
-        "languages": list(profile["languages"].values()), 
+        "languages": list(profile["languages"].values()),
         "target": profile["target"],
-        "address": profile["address"], 
-        "websites": list(profile["websites"].values()), 
+        "address": profile["address"],
+        "websites": list(profile["websites"].values()),
         "instant_messaging": profile["instant_messaging"],
-        "honors": profile["honors"], 
-        "publications": profile["publications"], 
-        "references": profile["references"], 
-        "other_info": profile["other_info"]
+        "honors": profile["honors"],
+        "publications": profile["publications"],
+        "references": profile["references"],
+        "other_info": profile["other_info"],
     }
+
 
 if __name__ == "__main__":
     data = get_candidate_profile("Kenneth Plum Toft")

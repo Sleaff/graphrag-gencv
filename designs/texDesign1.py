@@ -1,6 +1,6 @@
 from datetime import datetime
 
-headerCV1 = r'''
+headerCV1 = r"""
     \documentclass[letterpaper,11pt]{article}
     \newlength{\outerbordwidth}
     \pagestyle{empty}
@@ -61,64 +61,66 @@ headerCV1 = r'''
     %-----------------------------------------------------------
 
     \begin{document}
-    '''
+    """
 
 workTitle = {
-    "en": 'Work experience', 
-    "da": 'Arbejdserfaring', 
-    "de": 'Berufserfahrung', 
-    "fr": 'Expérience de travail', 
-    "it": 'Esperienza di lavoro'
+    "en": "Work experience",
+    "da": "Arbejdserfaring",
+    "de": "Berufserfahrung",
+    "fr": "Expérience de travail",
+    "it": "Esperienza di lavoro",
 }
 
 educationTitle = {
-    "en": 'Education', 
-    "da": 'Uddannelse', 
-    "de": 'Ausbildung', 
-    "fr": "L'éducation", 
-    "it": 'Educazione'
+    "en": "Education",
+    "da": "Uddannelse",
+    "de": "Ausbildung",
+    "fr": "L'éducation",
+    "it": "Educazione",
 }
 
 languageTitle = {
-    "en": 'Language Skills', 
-    "da": 'Sprogkundskaber', 
-    "de": 'Sprachkenntnisse', 
-    "fr": "Compétences linguistiques", 
-    "it": 'Competenze linguistiche'
+    "en": "Language Skills",
+    "da": "Sprogkundskaber",
+    "de": "Sprachkenntnisse",
+    "fr": "Compétences linguistiques",
+    "it": "Competenze linguistiche",
 }
 
 skillTitle = {
-    "en": 'Technical Skills', 
-    "da": 'Tekniske færdigheder', 
-    "de": 'Andere Fähigkeiten', 
-    "fr": "Autres compétences", 
-    "it": 'Altre competenze'
+    "en": "Technical Skills",
+    "da": "Tekniske færdigheder",
+    "de": "Andere Fähigkeiten",
+    "fr": "Autres compétences",
+    "it": "Altre competenze",
 }
 
 otherTitle = {
-    "en": 'Other Skills', 
-    "da": 'Andre færdigheder', 
-    "de": 'Sonstige Skills', 
-    "fr": "Autres compétences", 
-    "it": 'Altre competenze'
+    "en": "Other Skills",
+    "da": "Andre færdigheder",
+    "de": "Sonstige Skills",
+    "fr": "Autres compétences",
+    "it": "Altre competenze",
 }
 
 publicationTitle = {
-    "en": 'Publications', 
-    "da": 'Publikationer', 
-    "de": 'Publikationen', 
-    "fr": 'Publications', 
-    "it": 'Pubblicazioni'
+    "en": "Publications",
+    "da": "Publikationer",
+    "de": "Publikationen",
+    "fr": "Publications",
+    "it": "Pubblicazioni",
 }
 
+
 def format_date(date_str: str, as_year_only=False):
-    if not date_str or date_str.lower() == "present": 
+    if not date_str or date_str.lower() == "present":
         return "Now"
     try:
-        dt = datetime.strptime(date_str, '%Y-%m-%d')
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
         return dt.strftime("%Y") if as_year_only else dt.strftime("%b %Y")
     except ValueError:
         return date_str
+
 
 def generateMainDesign1(profile, language="en"):
     main = headerCV1
@@ -128,7 +130,7 @@ def generateMainDesign1(profile, language="en"):
     if name:
         first_name = name.split(" ")[0]
         last_name = " ".join(name.split(" ")[1:])
-        
+
         addr = profile.get("address") or {}
         city = addr.get("city", "")
         country = addr.get("country", "")
@@ -142,9 +144,9 @@ def generateMainDesign1(profile, language="en"):
         for website in profile.get("websites", []):
             w_type = website.get("website_type", "").lower()
             url = website.get("url", "")
-            if 'linkedin' in w_type:
+            if "linkedin" in w_type:
                 main += f"\n      \\faLinkedin {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
-            elif 'xing' in w_type:
+            elif "xing" in w_type:
                 main += f"\n      \\faXing {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
             else:
                 main += f"\n      \\faGlobe {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
@@ -159,7 +161,7 @@ def generateMainDesign1(profile, language="en"):
             start = format_date(job.get("start"))
             end = format_date(job.get("end"))
             city_country = f"{city}, {country}" if city else ""
-            
+
             main += f"""
         \\item \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{start} - {end}}}\\\\"""
 
@@ -173,7 +175,7 @@ def generateMainDesign1(profile, language="en"):
             start = format_date(edu.get("start_date"), True)
             end = format_date(edu.get("end_date"), True)
             city_country = f"{city}, {country}" if city else ""
-            
+
             main += f"""
 		    \\item \\ressubheading{{{edu.get("institution")}}}{{{city_country}}}{{{edu.get("degree")}}}{{{start} - {end}}}\\\\"""
 
@@ -184,11 +186,11 @@ def generateMainDesign1(profile, language="en"):
     languages = profile.get("languages", [])
     if skills or languages:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{skillTitle.get(language, 'Skills')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
-        
+
         if languages:
             langs = ", ".join(languages)
             main += f"\n\t\t    \\item[] \\ressubheading{{{languageTitle.get(language, 'Language Skills')}}}{{}}{{}}{{}}\\\\*{langs}"
-            
+
         if skills:
             skls = ", ".join(skills)
             main += f"\n\t\t    \\item[] \\ressubheading{{Core Competencies}}{{}}{{}}{{}}\\\\*{skls}"
@@ -207,7 +209,7 @@ def generateMainDesign1(profile, language="en"):
     # Honors/Awards[cite: 1]
     honors = profile.get("honors", [])
     if honors:
-        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{Honors \\& Awards}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
+        main += "\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{Honors \\& Awards}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{itemize}"
         for honor in honors:
             main += f"""
 		    \\item \\ressubheading{{{honor.get("title")}}}{{{honor.get("issuer")}}}{{}}{{{honor.get("date")}}}\\\\"""

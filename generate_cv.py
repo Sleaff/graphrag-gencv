@@ -1,10 +1,13 @@
 import json
+
 from loguru import logger
-from llm_service import call_llm, ChatMessage
+
+from llm_service import ChatMessage, call_llm
 from query_graph import get_candidate_profile
 
+
 def generate_tailored_cv(job_description: str, profile_data: dict) -> str:
-    
+
     prompt = f"""
     You are an expert CV writer. Write a tailored CV for the target Job Description.
     You MUST ONLY use the facts provided in the Candidate Data below. Do not invent any experience, roles, or skills.
@@ -15,15 +18,19 @@ def generate_tailored_cv(job_description: str, profile_data: dict) -> str:
     Job Description:
     {job_description}
     """
-    
+
     messages = [
-        ChatMessage(role="system", content="You generate highly tailored CVs based strictly on provided JSON data."),
-        ChatMessage(role="user", content=prompt)
+        ChatMessage(
+            role="system",
+            content="You generate highly tailored CVs based strictly on provided JSON data.",
+        ),
+        ChatMessage(role="user", content=prompt),
     ]
-    
+
     result = call_llm(messages)
     logger.success("Tailored CV generated successfully.")
     return result
+
 
 if __name__ == "__main__":
     target_job = "We are looking for a Software Developer with experience in backend systems, Python, and Docker."

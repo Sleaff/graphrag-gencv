@@ -1,13 +1,13 @@
-from fastapi import File, HTTPException, UploadFile
 import os
-from loguru import logger
-from docling.document_converter import DocumentConverter
 import tempfile
-from fastapi.responses import FileResponse
+
+from docling.document_converter import DocumentConverter
+from fastapi import File, HTTPException, UploadFile
+from loguru import logger
+from marker.config.parser import ConfigParser
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.output import text_from_rendered
-from marker.config.parser import ConfigParser
 
 logger.info("Initializing Extraction Module (Docling)...")
 try:

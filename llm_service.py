@@ -2,7 +2,8 @@ import openai
 from fastapi import HTTPException
 from loguru import logger
 from pydantic import BaseModel, Field
-from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, EMBEDDING_MODEL
+
+from settings import EMBEDDING_MODEL, LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
 
 class ChatMessage(BaseModel):
@@ -25,7 +26,7 @@ def call_llm(messages: list[ChatMessage]) -> str:
         completion = client.chat.completions.create(
             model=LLM_MODEL,
             messages=[message.model_dump() for message in messages],
-            response_format={"type": "json_object"} 
+            response_format={"type": "json_object"},
         )
     except openai.AuthenticationError as exc:
         raise HTTPException(
@@ -46,18 +47,34 @@ def call_llm(messages: list[ChatMessage]) -> str:
 
     return message.content
 
+
 def call_embedding(text: str) -> list[float]:
     """Generates embeddings for the given text using the configured LLM provider."""
     client = get_llm_client()
     try:
-        response = client.embeddings.create(
-            model=EMBEDDING_MODEL,
-            input=text
-        )
+        response = client.embeddings.create(model=EMBEDDING_MODEL, input=text)
         return response.data[0].embedding
     except Exception as e:
         logger.error(f"Embedding API Error: {str(e)}")
         raise HTTPException(
-            status_code=502,
-            detail=f"Embedding generation failed: {str(e)}"
+            status_code=502, detail=f"Embedding generation failed: {str(e)}"
         ) from e
+
+
+def create_baseline_cv_llm(profile: dict, job_description: str) -> str:
+    """Generates a baseline CV in Markdown format using the LLM based on the candidate profile and job description."""
+    system_prompt = (
+        "You are an expert CV generator. You are provided with a candidate's profile "
+        "and a job description. Generate a concise, professional CV in Markdown format "
+        "tailored to the job description. Highlight relevant skills and experiences."
+    )
+    user_prompt = (
+        f"Candidate Profile:\n{profile}\n\nJob Description:\n{job_description}"
+    )
+
+    messages = [
+        ChatMessage(role="system", content=system_prompt),
+        ChatMessage(role="user", content=user_prompt),
+    ]
+
+    return call_llm(messages)

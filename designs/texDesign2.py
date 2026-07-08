@@ -1,6 +1,6 @@
 from datetime import datetime
 
-headerCV2 = r'''
+headerCV2 = r"""
 \documentclass[letterpaper,12pt]{article}[leftmargin=*]
 
 \usepackage[empty]{fullpage}
@@ -15,9 +15,9 @@ headerCV2 = r'''
 
 %-------------------------------------------------- SETTINGS HERE --------------------------------------------------
 
-'''
+"""
 
-settingsPart2 = r'''
+settingsPart2 = r"""
 \def \headertype {\doublecol} % \singlecol or \doublecol
 
 % Misc settings
@@ -128,64 +128,66 @@ settingsPart2 = r'''
 \headertype{\linkedin}{\github}{\website}{\phone}{\email}{} % Set the order of items here
 \vspace{-10pt} 
 
-'''
+"""
 
 workTitle = {
-    "en": 'Work experience', 
-    "da": 'Arbejdserfaring', 
-    "de": 'Berufserfahrung', 
-    "fr": 'Expérience de travail', 
-    "it": 'Esperienza di lavoro'
+    "en": "Work experience",
+    "da": "Arbejdserfaring",
+    "de": "Berufserfahrung",
+    "fr": "Expérience de travail",
+    "it": "Esperienza di lavoro",
 }
 
 educationTitle = {
-    "en": 'Education', 
-    "da": 'Uddannelse', 
-    "de": 'Ausbildung', 
-    "fr": "L'éducation", 
-    "it": 'Educazione'
+    "en": "Education",
+    "da": "Uddannelse",
+    "de": "Ausbildung",
+    "fr": "L'éducation",
+    "it": "Educazione",
 }
 
 languageTitle = {
-    "en": 'Language Skills', 
-    "da": 'Sprogkundskaber', 
-    "de": 'Sprachkenntnisse', 
-    "fr": "Compétences linguistiques", 
-    "it": 'Competenze linguistiche'
+    "en": "Language Skills",
+    "da": "Sprogkundskaber",
+    "de": "Sprachkenntnisse",
+    "fr": "Compétences linguistiques",
+    "it": "Competenze linguistiche",
 }
 
 skillTitle = {
-    "en": 'Technical Skills', 
-    "da": 'Tekniske færdigheder', 
-    "de": 'Andere Fähigkeiten', 
-    "fr": "Autres compétences", 
-    "it": 'Altre competenze'
+    "en": "Technical Skills",
+    "da": "Tekniske færdigheder",
+    "de": "Andere Fähigkeiten",
+    "fr": "Autres compétences",
+    "it": "Altre competenze",
 }
 
 otherTitle = {
-    "en": 'Other Skills', 
-    "da": 'Andre færdigheder', 
-    "de": 'Sonstige Skills', 
-    "fr": "Autres compétences", 
-    "it": 'Altre competenze'
+    "en": "Other Skills",
+    "da": "Andre færdigheder",
+    "de": "Sonstige Skills",
+    "fr": "Autres compétences",
+    "it": "Altre competenze",
 }
 
 publicationTitle = {
-    "en": 'Publications', 
-    "da": 'Publikationer', 
-    "de": 'Publikationen', 
-    "fr": 'Publications', 
-    "it": 'Pubblicazioni'
+    "en": "Publications",
+    "da": "Publikationer",
+    "de": "Publikationen",
+    "fr": "Publications",
+    "it": "Pubblicazioni",
 }
 
+
 def format_date(date_str: str, as_year_only=False):
-    if not date_str or date_str.lower() == "present": 
+    if not date_str or date_str.lower() == "present":
         return "Now"
     try:
-        dt = datetime.strptime(date_str, '%Y-%m-%d')
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
         return dt.strftime("%Y") if as_year_only else dt.strftime("%b %Y")
     except ValueError:
         return date_str
+
 
 def generateMainDesign2(profile, language="en"):
     main = headerCV2
@@ -195,32 +197,32 @@ def generateMainDesign2(profile, language="en"):
         main += f"\\def \\fullname {{{profile.name}}}\n\\def \\subtitle {{}}\n"
 
     # Default missing properties to empty strings if not present in your schema
-    phone = getattr(profile, 'phone_number', '')
-    email = getattr(profile, 'email', '')
+    phone = getattr(profile, "phone_number", "")
+    email = getattr(profile, "email", "")
 
     if phone:
         main += f"\\def \\phoneicon {{\\faPhone}}\n\\def \\phonetext {{{phone}}}\n"
     else:
-        main += f"\\def \\phoneicon {{}}\n\\def \\phonetext {{}}\n"
+        main += "\\def \\phoneicon {}\n\\def \\phonetext {}\n"
 
     if email:
         main += f"\\def \\emailicon {{\\faEnvelope}}\n\\def \\emaillink {{mailto:{email}}} \\def \\emailtext {{{email}}}\n"
     else:
-        main += f"\\def \\emailicon {{}}\n\\def \\emaillink {{}} \\def \\emailtext {{}}\n"
-    
+        main += "\\def \\emailicon {}\n\\def \\emaillink {} \\def \\emailtext {}\n"
+
     # Empty fallbacks for layout macros
-    main += f"\\def \\linkedinicon {{}}\n\\def \\linkedinlink {{}} \\def \\linkedintext {{}}\n"
-    main += f"\\def \\githubicon {{}}\n\\def \\githublink {{}} \\def \\githubtext {{}}\n"
-    main += f"\\def \\websiteicon {{}}\n\\def \\websitelink {{}} \\def \\websitetext {{}}\n"
+    main += "\\def \\linkedinicon {}\n\\def \\linkedinlink {} \\def \\linkedintext {}\n"
+    main += "\\def \\githubicon {}\n\\def \\githublink {} \\def \\githubtext {}\n"
+    main += "\\def \\websiteicon {}\n\\def \\websitelink {} \\def \\websitetext {}\n"
 
     main += settingsPart2
 
     # Write website information about the user below header[cite: 5]
     if profile.websites:
         for website in profile.websites:
-            if 'linkedin' in website.website_type.lower():
+            if "linkedin" in website.website_type.lower():
                 main += f"\\faLinkedin {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
-            elif 'xing' in website.website_type.lower():
+            elif "xing" in website.website_type.lower():
                 main += f"\\faXing {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
             else:
                 main += f"\\faGlobe {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
@@ -233,7 +235,11 @@ def generateMainDesign2(profile, language="en"):
         for edu in profile.education:
             start = format_date(edu.start_date, True)
             end = format_date(edu.end_date, True)
-            city_country = f"{profile.address.city}, {profile.address.country}" if profile.address else ""
+            city_country = (
+                f"{profile.address.city}, {profile.address.country}"
+                if profile.address
+                else ""
+            )
 
             main += f"""  \\resumeEntryStart
         \\resumeEntryTSDL
@@ -248,7 +254,11 @@ def generateMainDesign2(profile, language="en"):
         for exp in profile.experiences:
             start = format_date(exp.start_date)
             end = format_date(exp.end_date)
-            city_country = f"{profile.address.city}, {profile.address.country}" if profile.address else ""
+            city_country = (
+                f"{profile.address.city}, {profile.address.country}"
+                if profile.address
+                else ""
+            )
 
             main += f"""  \\resumeEntryStart
         \\resumeEntryTSDL
@@ -277,15 +287,15 @@ def generateMainDesign2(profile, language="en"):
     # Write skill information about the user[cite: 5]
     if profile.languages or profile.technical_skills:
         main += f"\n%--- SKILLS ---\n\\section{{\\faGears}}{{{skillTitle.get(language, 'Technical Skills')}}} \\resumeEntryStart\n"
-        
+
         if profile.languages:
             langs = ", ".join([l.name for l in profile.languages])
             main += f"  \\resumeEntryS{{{languageTitle.get(language, 'Language Skills')} }}{{{langs}}}\n"
-            
+
         if profile.technical_skills:
             skills = ", ".join(profile.technical_skills)
             main += f"  \\resumeEntryS{{{otherTitle.get(language, 'Other Skills')} }}{{{skills}}}\n"
-            
+
         main += "  \\resumeEntryEnd\n"
 
     main += "\n\\end{document}"
@@ -293,6 +303,6 @@ def generateMainDesign2(profile, language="en"):
 
 
 def generateMainDesign2Enriched(profile, language="en"):
-    # With direct Pydantic models, enriched queries are handled in the ingestion phase, 
+    # With direct Pydantic models, enriched queries are handled in the ingestion phase,
     # not the rendering phase. We can simply return the base generator.
     return generateMainDesign2(profile, language)
