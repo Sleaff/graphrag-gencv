@@ -1,6 +1,6 @@
 import json
 
-from SPARQLWrapper import JSON, SPARQLWrapper
+from SPARQLWrapper import JSON, SPARQLWrapper, POST
 
 from settings import GRAPHDB_URL
 
@@ -58,7 +58,6 @@ def get_candidate_profile(candidate_name: str):
             OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
             OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
             
-            # UPDATED: Added skos:broader parent label traversal for job skills
             OPTIONAL {{ 
                 ?job my0:hasSkill ?jobSkillUri .
                 OPTIONAL {{ ?jobSkillUri my0:skillName ?jobSkillName . }}
@@ -134,8 +133,42 @@ def get_candidate_profile(candidate_name: str):
         }}
 
         OPTIONAL {{ ?person my0:hasAddress ?addr . ?addr my0:city ?city ; my0:country ?country . }}
+
+        OPTIONAL {{
+            ?cv my0:hasWebsite ?website .
+            ?website my0:websiteURL ?url .
+            OPTIONAL {{ ?website my0:websiteType ?type . }}
+        }}
+
+        OPTIONAL {{
+            ?cv my0:hasTarget ?target .
+            ?target my0:targetJobTitle ?targetTitle .
+            OPTIONAL {{ ?target my0:targetConditionWillRelocate ?relocate . }}
+            OPTIONAL {{ ?target my0:targetConditionWillTravel ?travel . }}
+        }}
+
+        OPTIONAL {{
+            ?cv my0:hasHonorAward ?honor .
+            ?honor my0:honorTitle ?hTitle .
+            OPTIONAL {{ ?honor my0:honorIssuer ?hIssuer . }}
+            OPTIONAL {{ ?honor my0:honorIssuedDate ?hDate . }}
+        }}
+
+        OPTIONAL {{
+            ?cv my0:hasPublication ?pub .
+            ?pub my0:publicationTitle ?pTitle .
+            OPTIONAL {{ ?pub my0:publicationDate ?pDate . }}
+            OPTIONAL {{ ?pub my0:publicationDescription ?pDesc . }}
+        }}
+
+        OPTIONAL {{
+            ?cv my0:hasReference ?ref .
+            ?ref my0:referenceName ?refName .
+            OPTIONAL {{ ?ref my0:referenceRelation ?refRel . }}
+        }}
     }}
     """
+    sparql.setMethod(POST)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
@@ -210,11 +243,10 @@ def get_candidate_profile(candidate_name: str):
                 j_uri = row["jobSkillUri"]["value"]
                 j_name = row.get("jobSkillName", {}).get("value", j_uri.split("/")[-1])
 
-                # create the skill object if it doesn't exist for this job
                 if j_name not in profile["jobs"][job_key]["raw_skills"]:
                     profile["jobs"][job_key]["raw_skills"][j_name] = {
                         "name": j_name,
-                        # "uri": j_uri,         # not needed for cv generation
+                        # "uri": j_uri,
                         "parents": set(),
                     }
 
@@ -243,10 +275,7 @@ def get_candidate_profile(candidate_name: str):
                 "start_date": row.get("crsStart", {}).get("value", ""),
                 "finish_date": row.get("crsEnd", {}).get("value", ""),
                 "organized_by": row.get("crsOrg", {}).get("value", ""),
-                "has_certification": row.get("crsCert", {})
-                .get("value", "false")
-                .lower()
-                == "true",
+                "has_certification": row.get("crsCert", {}).get("value", "false").lower() == "true",
             }
             if crs_entry not in profile["courses"]:
                 profile["courses"].append(crs_entry)
@@ -276,8 +305,7 @@ def get_candidate_profile(candidate_name: str):
                 "description": row.get("projDesc", {}).get("value", ""),
                 "creator": row.get("projCreator", {}).get("value", ""),
                 "url": row.get("projUrl", {}).get("value", ""),
-                "is_current": row.get("projCurrent", {}).get("value", "false").lower()
-                == "true",
+                "is_current": row.get("projCurrent", {}).get("value", ""),
             }
             if proj_entry not in profile["projects"]:
                 profile["projects"].append(proj_entry)
@@ -308,7 +336,6 @@ def get_candidate_profile(candidate_name: str):
             if skill_name not in profile["skills"]:
                 profile["skills"][skill_name] = {
                     "name": skill_name,
-                    # "uri": uri,  # not needed for cv generation
                     "parents": set(),
                 }
 
@@ -329,8 +356,8 @@ def get_candidate_profile(candidate_name: str):
         if "targetTitle" in row and profile["target"] is None:
             profile["target"] = {
                 "job_title": row["targetTitle"]["value"],
-                "relocate": row["relocate"]["value"].lower() == "true",
-                "travel": row["travel"]["value"].lower() == "true",
+                "relocate": row["relocate"]["value"].lower() == "true" if "relocate" in row else False,
+                "travel": row["travel"]["value"].lower() == "true" if "travel" in row else False,
             }
 
         # Address Data
@@ -345,22 +372,26 @@ def get_candidate_profile(candidate_name: str):
             site_key = row["url"]["value"]
             profile["websites"][site_key] = {
                 "url": row["url"]["value"],
-                "website_type": row["type"]["value"],
+                "website_type": row.get("type", {}).get("value", "Website"),
             }
 
         # Honors
         if "hTitle" in row:
             honor_entry = {
                 "title": row["hTitle"]["value"],
-                "issuer": row["hIssuer"]["value"],
-                "date": row["hDate"]["value"],
+                "issuer": row.get("hIssuer", {}).get("value", ""),
+                "date": row.get("hDate", {}).get("value", ""),
             }
             if honor_entry not in profile["honors"]:
                 profile["honors"].append(honor_entry)
 
         # Publications
         if "pTitle" in row:
-            pub_entry = {"title": row["pTitle"]["value"], "date": row["pDate"]["value"]}
+            pub_entry = {
+                "title": row["pTitle"]["value"],
+                "date": row.get("pDate", {}).get("value", ""),
+                "description": row.get("pDesc", {}).get("value", "")
+            }
             if pub_entry not in profile["publications"]:
                 profile["publications"].append(pub_entry)
 

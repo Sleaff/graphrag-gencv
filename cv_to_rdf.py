@@ -13,18 +13,6 @@ from generate_rdf import create_rdf_graph, upload_to_graphdb
 from llm_service import ChatMessage, call_llm
 from vector_service import generate_and_store_embedding
 
-# def map_to_esco_uri(skill_name: str) -> str | None:
-#     esco_database = {
-#         "python": "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d",
-#         "machine learning": "http://data.europa.eu/esco/skill/3a2d5b45-56e4-4f5a-a55a-4a4a65afdc43",
-#         "natural language processing": "http://data.europa.eu/esco/skill/fff0e2cd-d0bd-4b02-9daf-158b79d9688a",
-#         "docker": "http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17",
-#         "sparql": "http://data.europa.eu/esco/skill/5da8018b-ae85-4cde-ad93-0394369018f3",
-#         "fastapi": "http://data.europa.eu/esco/skill/fd33c66c-70c4-40e6-b87c-5495bd3bf26e",
-#         "software developer": "http://data.europa.eu/esco/occupation/f2b15a0e-e65a-438a-affb-29b9d50b77d1"
-#     }
-#     return esco_database.get(skill_name.lower().strip())
-
 
 class Address(BaseModel):
     city: str
@@ -194,7 +182,7 @@ Return ONLY a valid JSON object matching this schema exactly:
     ]
 
     candidate_data_json = call_llm(messages)
-    print(f"LLM returned candidate data: {candidate_data_json}")
+    logger.debug(f"LLM returned candidate data: {candidate_data_json}")
 
     try:
         if "```json" in candidate_data_json:
