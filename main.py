@@ -1,8 +1,9 @@
 import os
 import subprocess
+from typing import Optional
 import uuid
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from loguru import logger
@@ -10,7 +11,7 @@ from pydantic import BaseModel
 
 from cv_to_rdf import CandidateProfile, generate_rdf_and_vectors, map_cv_to_rdf
 from designs.texDesign import generateDesign1, generateDesign2, generateDesign3
-from generate_cv import generate_tailored_cv
+from generate_cv import generate_baseline_cv_llm, generate_tailored_cv
 from hybrid_search import hybrid_search
 from llm_service import ChatMessage, call_llm
 from pdf_extractor import extract_text
@@ -84,26 +85,39 @@ def generate_graphrag_cv(request: GraphragCVRequest) -> str:
 
     return final_cv
 
-
-class CVRequest(BaseModel):
-    candidate_name: str
-    job_description: str
-
-
-@app.post("/generate-hybrid-cv")
-def generate_hybrid_cv(request: CVRequest) -> str:
-    """The core thesis pipeline: Vector Recall -> Graph Precision -> LLM Generation."""
-
-    logger.info(f"Running hybrid search for {request.candidate_name}...")
-    profile_data = hybrid_search(request.job_description, request.candidate_name)
-
-    if "message" in profile_data:
-        raise HTTPException(status_code=404, detail=profile_data["message"])
-
-    logger.info("Generating tailored CV via LLM...")
-    final_cv = generate_tailored_cv(request.job_description, profile_data)
-
+@app.post("/generate-baseline-llm-cv")
+async def generate_baseline_llm_cv(
+    job_description: str = Form(...),
+    design_choice: int = Form(...),
+    max_pages: Optional[int] = Form(None), # This makes it optional
+    file: UploadFile = File(...)
+) -> str:
+    """Generates a baseline CV using only the LLM."""
+    logger.info(f"Extracting text from uploaded file: {file.filename}")
+    extraction_result = await extract_text(file)
+    final_cv = generate_baseline_cv_llm(job_description, extraction_result, design_choice, max_pages)
     return final_cv
+
+
+# class CVRequest(BaseModel):
+#     candidate_name: str
+#     job_description: str
+
+
+# @app.post("/generate-hybrid-cv")
+# def generate_hybrid_cv(request: CVRequest) -> str:
+#     """The core thesis pipeline: Vector Recall -> Graph Precision -> LLM Generation."""
+
+#     logger.info(f"Running hybrid search for {request.candidate_name}...")
+#     profile_data = hybrid_search(request.job_description, request.candidate_name)
+
+#     if "message" in profile_data:
+#         raise HTTPException(status_code=404, detail=profile_data["message"])
+
+#     logger.info("Generating tailored CV via LLM...")
+#     final_cv = generate_tailored_cv(request.job_description, profile_data)
+
+#     return final_cv
 
 
 @app.post("/ingest-structured-profile")

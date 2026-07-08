@@ -1,3 +1,4 @@
+from pyexpat.errors import messages
 import subprocess
 import json
 from loguru import logger
@@ -44,8 +45,8 @@ def get_length_rules(max_pages: int) -> str:
         - Education & Projects: Provide full details, descriptions, and highlights for all academic and project work.
         - Optional Sections: Include ALL 'publications', 'patents', 'honors', and 'courses'. Do not omit any achievements.
         """
-
-def tailor_profile_for_job(job_description: str, raw_profile: dict, max_pages: int = None, error_feedback: str = "") -> dict:
+    
+def get_cv_prompt(job_description: str, raw_profile: dict | str, max_pages: int = None, error_feedback: str = "") -> list[ChatMessage]:
     feedback_prompt = ""
     if error_feedback:
         feedback_prompt = f"""
@@ -89,16 +90,20 @@ def tailor_profile_for_job(job_description: str, raw_profile: dict, max_pages: i
     }}
     
     Raw Profile:
-    {json.dumps(raw_profile, default=str)}
+    {json.dumps(raw_profile, default=str) if isinstance(raw_profile, dict) else raw_profile}
     
     Job Description:
     {job_description}
     """
 
-    messages = [
-        ChatMessage(role="system", content="You are a data mapper and CV expert. Output strictly valid JSON."),
-        ChatMessage(role="user", content=prompt),
-    ]
+    logger.debug(f"Generated CV prompt for LLM:\n{prompt}")
+    return [
+            ChatMessage(role="system", content="You are a data mapper and CV expert. Output strictly valid JSON."),
+            ChatMessage(role="user", content=prompt),
+        ]
+
+def tailor_profile_for_job(job_description: str, raw_profile: dict, max_pages: int = None, error_feedback: str = "") -> dict:
+    messages = get_cv_prompt(job_description, raw_profile, max_pages, error_feedback)
 
     result = call_llm(messages)
     try:
@@ -188,6 +193,19 @@ def generate_tailored_cv(job_description: str, candidate_name: str, design_choic
     
     raise RuntimeError("CV generation failed completely after all retries.")
 
+def generate_baseline_cv_llm(job_description: str, raw_profile: str, design_choice: int = 1, max_pages: int | None = None):
+    """ Generates a baseline CV using only information going directly to the llm, same format at generate_tailored_cv """
+    logger.info("Generating baseline CV using LLM...")
+    messages = get_cv_prompt(job_description, raw_profile, max_pages)
+    result = call_llm(messages)
+    try:
+        profile_dict = json.loads(result)
+        safe_profile = sanitize_dict(profile_dict)
+        pdf_path = generate_and_save_pdf(safe_profile, design_choice)
+        return pdf_path
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse LLM response into JSON: {e}")
+        raise RuntimeError("LLM output was not valid JSON.")
 
 if __name__ == "__main__":
     tailored_profile = {"name": "Kenneth Plum Toft", "contact": {"phone": "+45 26167063", "email": "wowkenneth@gmail.com"}, "address": {"city": "Copenhagen", "country": "Denmark"}, "websites": [], "summary": "Generative AI & Full-Stack Engineer currently pursuing an MSc in Computer Science (AI and Algorithms) with a specialized focus on frontier AI technologies, including RAG, GraphRAG, and specialized LLMs. Proven track record in architecting and deploying enterprise-grade AI solutions, taking complex AI-centric use-cases from ideation to production. Expert in full-stack development (C#/.NET, Python, React/TypeScript) and cloud-native infrastructure (Docker, Jenkins, AWS), with extensive experience in CI/CD pipelines, scalable microservices, and model optimization. A highly self-motivated collaborator with exceptional communication skills, passionate about leveraging cutting-edge AI to drive business impact, streamline workflows, and deliver high-quality products in dynamic, multinational environments.", "jobs": [{"company": "Dictus", "title": "Software Developer", "start": "Aug 2023", "end": "Present", "highlights": ["Spearheaded the design and production deployment of AI-powered features, including a resume generation tool leveraging modern LLMs.", "Implemented advanced prompt engineering and developed robust pre/post-processing pipelines for seamless model invocation.", "Built scalable microservices integrating Python-based AI models with C#/.NET and React (TypeScript) frontend architectures.", "Integrated speaker diarization and Whisper/Wav2Vec models, optimizing performance for real-world audio processing.", "Managed end-to-end CI/CD pipelines using Docker, Git, and Jenkins on remote cloud servers.", "Collaborated with cross-functional teams to maintain and scale large-scale enterprise applications for Stortinget, ensuring high-quality deliverables."]}, {"company": "Dictus", "title": "Software Developer Intern", "start": "Aug 2022", "end": "Aug 2023", "highlights": ["Engineered a full-stack web platform for crowdsourcing audio data using C#/.NET, Python, and React (TypeScript).", "Developed and deployed deep learning models for Automatic Speech Recognition (ASR) and speaker separation.", "Applied modern software development practices and agile methodologies to deliver production-ready AI integrations.", "Managed rapid prototyping and iteration cycles, aligning technical deliverables with stakeholder requirements."]}, {"company": "Greenwood Engineering", "title": "Student Worker", "start": "Aug 2021", "end": "Sep 2022", "highlights": ["Provisioned, maintained, and optimized physical and virtual server infrastructure for enterprise use.", "Built and managed VM hosts for internal development and CI/CD tools (Git, Jenkins, Wiki).", "Provided enterprise IT support and streamlined server lifecycle management processes."]}, {"company": "Tradir.io", "title": "Software Engineer", "start": "Dec 2020", "end": "Aug 2021", "highlights": ["Developed and maintained backend CRM software in an agile environment using Python, Django-REST, and PostgreSQL.", "Integrated third-party APIs (Mailgun, Nylas, Nanonets) to streamline workflow automation and data processing.", "Deployed solutions on AWS, ensuring scalable and secure backend architecture."]}, {"company": "Widex", "title": "Firmware Updater", "start": "Feb 2019", "end": "Oct 2019", "highlights": ["Executed precision firmware updates on newly manufactured hearing aid devices, ensuring regulatory compliance and device reliability.", "Collaborated with hardware and engineering teams to validate firmware deployment processes."]}, {"company": "Power", "title": "IT-Support", "start": "Sep 2016", "end": "Oct 2017", "highlights": ["Provided comprehensive IT support for end-user devices including computers, smartphones, tablets, and smartwatches.", "Managed data transfer, recovery, and customer service operations with a focus on rapid resolution."]}], "projects": [{"name": "Audio Transcription & Speaker Separation Platform", "role": "Developer", "start": "2022", "end": "2023", "highlights": ["Architected a full-stack application for automated audio transcription using ASR and deep learning-based speaker separation.", "Deployed production-ready AI models integrating front-end React UI with Python backend services.", "Continuously iterated on the platform post-launch, maintaining active development and commercial deployment."]}], "education": [{"degree": "MSc in AI and Algorithms", "institution": "Technical University of Denmark", "start_date": "2024", "end_date": "2026", "description": "Master's Thesis: Synergy Effects of GraphRAG, Fine-tuned Embeddings, and Specialized LLMs on Automated Content Generation. Developing a full-stack application to benchmark automated generation quality against standard baselines. Implementing and deploying advanced RAG architectures, GraphRAG techniques, and fine-tuned specialized LLMs."}, {"degree": "BSc in Computer Engineering", "institution": "Technical University of Denmark", "start_date": "2019", "end_date": "2023", "description": "Comprehensive undergraduate studies in computer engineering, focusing on software development, systems architecture, algorithmic problem-solving, and full-stack engineering principles."}, {"degree": "Exchange Student in Computer Science", "institution": "Hanyang University (South Korea)", "start_date": "2020", "end_date": "2021", "description": "International academic exchange program specializing in advanced computer science concepts, software engineering methodologies, and cross-cultural technical collaboration."}], "courses": [], "patents": [], "skills": ["C#", "Jenkins", "ASP.NET", ".NET", "SQL", "Python", "TypeScript", "JavaScript", "MySQL", "PostgreSQL", "Docker", "Git", "React", "AWS", "Google Cloud Platform", "Java", "DVC", "RabbitMQ", "HuggingFace", "Scikit-Learn", "Django REST", "WandB", "FastAPI", "Node.js", "C", "PyTorch", "LLMs", "RAG", "GraphRAG", "Prompt Engineering", "Speaker Diarization", "ASR", "Deep Learning", "CI/CD", "Agile Development", "Enterprise Software Architecture", "AI-to-Production Deployment", "Cross-functional Collaboration"], "languages": [{"name": "English", "proficiency": "Professional Working Proficiency"}, {"name": "Danish", "proficiency": "Native"}, {"name": "Korean", "proficiency": "Low Intermediate"}], "publications": [], "honors": []}
