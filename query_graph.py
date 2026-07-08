@@ -444,6 +444,32 @@ def get_candidate_profile(candidate_name: str):
     }
 
 
+def get_all_candidate_names():
+    sparql = SPARQLWrapper(GRAPHDB_URL)
+    
+    query = """
+    PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
+    SELECT ?firstName ?lastName
+    WHERE {
+        ?person a my0:Person .
+        ?person my0:firstName ?firstName .
+        OPTIONAL { ?person my0:lastName ?lastName . }
+    }
+    """
+    
+    sparql.setQuery(query)
+    sparql.setMethod(POST)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    
+    names = []
+    for row in results["results"]["bindings"]:
+        first = row["firstName"]["value"]
+        last = row.get("lastName", {}).get("value", "")
+        names.append(f"{first} {last}".strip())
+        
+    return names
+
 if __name__ == "__main__":
     data = get_candidate_profile("Kenneth Plum Toft")
     print("\n--- RETRIEVED GRAPH DATA ---")

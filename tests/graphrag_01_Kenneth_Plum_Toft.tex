@@ -1,0 +1,144 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Kenneth Plum Toft} & +45 26167063 \\
+      Copenhagen, Denmark & wowkenneth@gmail.com \\
+      \faLinkedin { }  \href{https://www.linkedin.com/in/kenneth-toft-68291a19b/}{https://www.linkedin.com/in/kenneth-toft-68291a19b/} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Generative AI \& Full-Stack Engineer with a proven track record of translating cutting-edge AI research into enterprise-grade production systems. Currently pursuing an MSc in Computer Science and Engineering (AI \& Algorithms) at DTU, with advanced research focusing on RAG, GraphRAG, specialized LLMs, and automated content generation. Demonstrated expertise in architecting scalable AI microservices, implementing modern AI standards, and driving CI/CD pipelines across cloud-native environments (AWS, Docker, Jenkins). Adept at bridging the gap between data science, domain expertise, and software engineering to deliver high-impact AI solutions. Passionate about leveraging frontier AI technologies to optimize workflows, ensure model governance, and create tangible value for large-scale stakeholders in healthcare and enterprise sectors.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Dictus}{Copenhagen, Denmark}{Software Developer}{Aug 2023 - Now}
+        \begin{itemize}
+            \resitem{Architected and deployed AI-powered features, including an LLM-driven resume generator, taking use-cases from ideation to production.}
+            \resitem{Engineered robust full-stack applications using C\#/.NET, React (TypeScript), and Python AI microservices, ensuring seamless integration of GenAI into enterprise workflows.}
+            \resitem{Implemented advanced speech AI solutions, including Automatic Speech Recognition (ASR) and speaker diarization, optimizing models for real-world audio processing.}
+            \resitem{Managed end-to-end CI/CD pipelines using Docker, Git, and Jenkins on remote infrastructure, enforcing best practices for version control and deployment.}
+            \resitem{Collaborated with cross-functional teams to deliver and maintain large-scale, high-availability applications for the Norwegian Parliament (Stortinget).}
+        \end{itemize}
+        \item \ressubheading{Dictus}{Copenhagen, Denmark}{Software Developer Intern}{Aug 2022 - Aug 2023}
+        \begin{itemize}
+            \resitem{Developed a full-stack crowdsourcing web platform for audio data collection using C\#/.NET, Python, TypeScript, and React.}
+            \resitem{Designed and deployed a Bachelor-level AI application integrating deep learning models for ASR and speaker separation, directly contributing to enterprise data pipelines.}
+            \resitem{Collaborated with product and engineering teams to rapidly prototype and iterate on AI-driven audio processing features.}
+        \end{itemize}
+        \item \ressubheading{Tradir.io}{Copenhagen, Denmark}{Software Engineer}{Dec 2020 - Aug 2021}
+        \begin{itemize}
+            \resitem{Engineered scalable CRM backend services in an agile environment using Python, Django-REST, and PostgreSQL.}
+            \resitem{Integrated multiple third-party API providers (Mailgun, Nylas, Nanonets) to streamline business processes and enhance data flow.}
+            \resitem{Deployed and maintained cloud-hosted applications on AWS, adhering to modern software development and CI/CD practices.}
+        \end{itemize}
+        \item \ressubheading{Greenwood Engineering}{Copenhagen, Denmark}{Student Worker}{Aug 2021 - Sep 2022}
+        \begin{itemize}
+            \resitem{Designed and maintained virtual machine infrastructures hosting critical internal tools (Git, Jenkins, Wiki) for engineering teams.}
+            \resitem{Executed server provisioning, lifecycle management, and hardware recycling initiatives to optimize IT infrastructure efficiency.}
+        \end{itemize}
+        \item \ressubheading{Widex}{Copenhagen, Denmark}{Firmware Updater}{Feb 2019 - Oct 2019}
+        \begin{itemize}
+            \resitem{Performed precision firmware updates on newly manufactured hearing aid devices, ensuring compliance with medical device standards.}
+        \end{itemize}
+        \item \ressubheading{Power}{Copenhagen, Denmark}{IT-Support}{Sep 2016 - Oct 2017}
+        \begin{itemize}
+            \resitem{Delivered comprehensive IT support and customer service, managing device setups, troubleshooting, and data recovery operations.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{AI Audio Transcription \& Crowdsourcing Platform}{}{Full-Stack AI Developer}{Aug 2022 - Aug 2023}
+        \begin{itemize}
+            \resitem{Engineered a full-stack web application leveraging deep learning models for Automatic Speech Recognition (ASR) and speaker separation.}
+            \resitem{Built a crowdsourcing data collection platform to acquire and manage high-quality audio datasets for model training and evaluation.}
+            \resitem{Integrated Python-based AI microservices with a TypeScript/React frontend to deliver a seamless user experience for audio processing and analysis.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Technical University of Denmark (DTU)}{Copenhagen, Denmark}{MSc Computer Science and Engineering (specialization in AI and Algorithms)}{2024 - 2026}
+		    \item \ressubheading{Technical University of Denmark (DTU)}{Copenhagen, Denmark}{BSc Computer Engineering}{2019 - 2023}
+		    \item \ressubheading{Hanyang University}{Copenhagen, Denmark}{Exchange Program (Computer Science)}{2020 - 2021}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] C\#, Python, TypeScript, JavaScript, React, ASP.NET, Django REST, FastAPI, Node.js, Java, C, SQL, MySQL, PostgreSQL, AWS, Google Cloud Platform (GCP), Docker, Jenkins, Git, RabbitMQ, DVC, HuggingFace, PyTorch, Scikit-Learn, WandB, Prompt Engineering, Large Language Models (LLMs), RAG, GraphRAG, Knowledge Graphs, Automatic Speech Recognition (ASR), Speaker Diarization, Whisper, Wav2Vec, Vector Databases \& Semantic Search, CI/CD Pipelines, Agile Methodologies, API Integration, Cloud-Native Architecture, GenAI Integration, Model Benchmarking \& Evaluation, Infrastructure Management
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{Danish}: Native
+		    \item[] \textbf{English}: Professional Working Proficiency
+		    \item[] \textbf{Korean}: Low Intermediate
+      \end{itemize}
+    \end{document}

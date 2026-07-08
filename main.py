@@ -16,7 +16,7 @@ from hybrid_search import hybrid_search
 from llm_service import ChatMessage, call_llm
 from pdf_extractor import extract_text
 from pdf_service import generate_and_save_pdf
-from query_graph import get_candidate_profile
+from query_graph import get_all_candidate_names, get_candidate_profile
 
 app = FastAPI(
     title="Graphrag CV Generator API",
@@ -205,9 +205,13 @@ async def generate_latex(
 
 @app.get("/list-candidates")
 async def list_candidates():
-    """Returns a list of all candidate names from the database."""
-    # TODO: implement actual logic
-    return ["Kenneth Plum Toft", "Jane Doe"]
+    """Returns a list of all candidate names from the graph database."""
+    try:
+        candidates = get_all_candidate_names()
+        return {"candidates": candidates}
+    except Exception as e:
+        logger.error(f"Error listing candidates: {e}")
+        raise HTTPException(status_code=500, detail="Could not retrieve candidate list")
 
 
 @app.get("/get-profile/{candidate_name}")
