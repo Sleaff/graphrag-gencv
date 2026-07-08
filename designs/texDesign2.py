@@ -1,134 +1,72 @@
 from datetime import datetime
 
-headerCV2 = r"""
-\documentclass[letterpaper,12pt]{article}[leftmargin=*]
+headerCV = r"""
+    \documentclass[letterpaper,11pt]{article}
+    \usepackage[empty]{fullpage}
+    
+    % Modern Fonts
+    \usepackage[sfdefault,light]{FiraSans} 
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    
+    % Styling and Icons
+    \usepackage{fontawesome}
+    \usepackage[svgnames]{xcolor}
+    \usepackage{hyperref}
+    \usepackage{enumitem}
 
-\usepackage[empty]{fullpage}
-\usepackage{enumitem}
-\usepackage[pdfnewwindow=true]{hyperref}
-\usepackage{fontawesome}
-\usepackage[sfdefault,light]{FiraSans}
-\usepackage[T1]{fontenc}
-\usepackage{anyfontsize}
-\usepackage{xcolor}
-\usepackage[utf8]{inputenc}
+    % Define Modern Colors
+    \definecolor{primary}{HTML}{1F2937} % Tailwind Gray 800 (Dark grey for main text/headers)
+    \definecolor{accent}{HTML}{2563EB}  % Tailwind Blue 600 (Sleek professional blue)
+    \definecolor{text}{HTML}{4B5563}    % Tailwind Gray 600 (Softer grey for descriptions)
 
-%-------------------------------------------------- SETTINGS HERE --------------------------------------------------
+    % Link Setup
+    \hypersetup{colorlinks=true, urlcolor=accent}
 
-"""
+    % Modern Margin Setup
+    \addtolength{\oddsidemargin}{-0.5in}
+    \addtolength{\evensidemargin}{-0.5in}
+    \addtolength{\textwidth}{1.0in}
+    \addtolength{\topmargin}{-0.5in}
+    \addtolength{\textheight}{1.0in}
+    \raggedbottom
+    \raggedright
+    \setlength{\tabcolsep}{0in}
 
-settingsPart2 = r"""
-\def \headertype {\doublecol} % \singlecol or \doublecol
+    % Global List Styling (Tightens up the spacing and modernizes the bullets)
+    \setlist[itemize]{leftmargin=*, itemsep=2pt, topsep=4pt, parsep=0pt}
+    \setlist[itemize,1]{label=\color{accent}\faAngleRight} % Sleek chevron for primary bullets
+    \setlist[itemize,2]{label=\color{accent}$\circ$, leftmargin=1em} % Hollow circles for sub-bullets
 
-% Misc settings
-\def \entryspacing {-0pt}
-
-\def \bulletstyle {\faAngleRight}
-
-% Define colours
-\definecolor{primary}{HTML}{000000}
-\definecolor{secondary}{HTML}{0D47A1}
-\definecolor{accent}{HTML}{263238}
-\definecolor{links}{HTML}{1565C0}
-
-%------------------------------------------------------------------------------------------------------------------- 
-
-% Defines to make listing easier
-\def \linkedin {\linkedinicon \hspace{3pt}\href{\linkedinlink}{\linkedintext}}
-\def \phone {\phoneicon \hspace{3pt}{ \phonetext}}
-\def \email {\emailicon \hspace{3pt}\href{\emaillink}{\emailtext}}
-\def \github {\githubicon \hspace{3pt}\href{\githublink}{\githubtext}}
-\def \website {\websiteicon \hspace{3pt}\href{\websitelink}{\websitetext}}
-% Adjust margins
-\addtolength{\oddsidemargin}{-0.55in}
-\addtolength{\evensidemargin}{-0.55in}
-\addtolength{\textwidth}{1.1in}
-\addtolength{\topmargin}{-0.6in}
-\addtolength{\textheight}{1.1in}
-
-% Define the link colours
-\hypersetup{
-    colorlinks=true,
-    urlcolor=links,
-}
-
-% Set the margin alignment 
-\raggedbottom
-\raggedright
-\setlength{\tabcolsep}{0in}
-
-%-------------------------
-% Custom commands
-
-% Sections
-\renewcommand{\section}[2]{\vspace{5pt}
-  \colorbox{secondary}{\color{white}\raggedbottom\normalsize\textbf{{#1}{\hspace{7pt}#2}}}
-}
-% Entry start and end, for spacing
-\newcommand{\resumeEntryStart}{\begin{itemize}[leftmargin=2.5mm]}
-\newcommand{\resumeEntryEnd}{\end{itemize}\vspace{\entryspacing}}
-
-% Itemized list for the bullet points under an entry, if necessary
-\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=4.5mm]}
-\newcommand{\resumeItemListEnd}{\end{itemize}}
-
-% Resume item
-\renewcommand{\labelitemii}{\bulletstyle}
-\newcommand{\resumeItem}[1]{
-  \item\small{
-    {#1 \vspace{-2pt}}
-  }
-}
-
-% Entry with title, subheading, date(s), and location
-\newcommand{\resumeEntryTSDL}[4]{
-  \vspace{-1pt}\item[]
-    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
-      \textbf{\color{primary}#1} & {\firabook\color{accent}\small#2} \\
-      \textit{\color{accent}\small#3} & \textit{\color{accent}\small#4} \\
-    \end{tabular*}\vspace{-6pt}
-}
-
-% Entry with title and date(s)
-\newcommand{\resumeEntryTD}[2]{
-  \vspace{-1pt}\item[]
-    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
-      \textbf{\color{primary}#1} & {\firabook\color{accent}\small#2} \\
-    \end{tabular*}\vspace{-6pt}
-}
-
-% Entry for special (skills)
-\newcommand{\resumeEntryS}[2]{
-  \item[]\small{
-    \textbf{\color{primary}#1 }{ #2 \vspace{-6pt}}
-  }
-}
-
-% Double column header
-\newcommand{\doublecol}[6]{
-  \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
-    {
-      \begin{tabular}[c]{l}
-        \fontsize{35}{45}\selectfont{\color{primary}{{\textbf{\fullname}}}} \\
-        {\textit{\subtitle}} 
-      \end{tabular}
-    } & {
-      \begin{tabular}[c]{l@{\hspace{1.5em}}l}
-        {\small#4} & {\small#1} \\
-        {\small#5} & {\small#2} \\
-        {\small#6} & {\small#3}
-      \end{tabular}
+    %-----------------------------------------------------------
+    % Custom Modern Commands
+    
+    % Standard list item with softer text color
+    \newcommand{\resitem}[1]{\item \color{text}#1}
+    
+    % Sleek Header with underline instead of bulky box
+    \newcommand{\resheading}[1]{
+      \vspace{12pt}
+      {\Large \color{primary}\textbf{#1}}
+      \vspace{-4pt}
+      \begin{center}\color{accent}\rule{\textwidth}{0.5pt}\end{center}
+      \vspace{-8pt}
     }
-  \end{tabular*}
-}
+    
+    % Modern Subheading (Title, Location, Role, Date)
+    \newcommand{\ressubheading}[4]{
+      \vspace{4pt}
+      \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+        \textbf{\color{primary}#1} & \color{text}#2 \\
+        \textit{\color{text}#3} & \textit{\color{text}#4} \\
+      \end{tabular*}\vspace{-4pt}
+    }
+    %-----------------------------------------------------------
 
-\begin{document}
-%---------------------------------------------------- HEADER ----------------------------------------------------
-
-\headertype{\linkedin}{\github}{\website}{\phone}{\email}{} % Set the order of items here
-\vspace{-10pt} 
-
-"""
+    \begin{document}
+    \color{text} % Set default text color
+    """
 
 workTitle = {
     "en": "Work experience",
@@ -162,14 +100,6 @@ skillTitle = {
     "it": "Altre competenze",
 }
 
-otherTitle = {
-    "en": "Other Skills",
-    "da": "Andre færdigheder",
-    "de": "Sonstige Skills",
-    "fr": "Autres compétences",
-    "it": "Altre competenze",
-}
-
 publicationTitle = {
     "en": "Publications",
     "da": "Publikationer",
@@ -177,7 +107,6 @@ publicationTitle = {
     "fr": "Publications",
     "it": "Pubblicazioni",
 }
-
 
 def format_date(date_str: str, as_year_only=False):
     if not date_str or date_str.lower() == "present":
@@ -188,121 +117,134 @@ def format_date(date_str: str, as_year_only=False):
     except ValueError:
         return date_str
 
-
 def generateMainDesign2(profile, language="en"):
-    main = headerCV2
+    main = headerCV
 
-    # Write personal information about the user[cite: 5]
-    if profile.name:
-        main += f"\\def \\fullname {{{profile.name}}}\n\\def \\subtitle {{}}\n"
+    # Personal Information
+    name = profile.get("name", "")
+    if name:
+        first_name = name.split(" ")[0]
+        last_name = " ".join(name.split(" ")[1:])
 
-    # Default missing properties to empty strings if not present in your schema
-    phone = getattr(profile, "phone_number", "")
-    email = getattr(profile, "email", "")
+        addr = profile.get("address") or {}
+        city = addr.get("city", "")
+        country = addr.get("country", "")
+        
+        contact = profile.get("contact") or {}
+        phone = contact.get("phone", "")
 
-    if phone:
-        main += f"\\def \\phoneicon {{\\faPhone}}\n\\def \\phonetext {{{phone}}}\n"
-    else:
-        main += "\\def \\phoneicon {}\n\\def \\phonetext {}\n"
+        main += f"""
+      \\begin{{tabular*}}{{\\textwidth}}{{l@{{\\extracolsep{{\\fill}}}}r}}
+      \\textbf{{\\huge \\color{{primary}} {first_name} {last_name}}} & \\color{{text}} {phone} \\\\
+      \\color{{text}} {city}, {country} & \\\\"""
 
-    if email:
-        main += f"\\def \\emailicon {{\\faEnvelope}}\n\\def \\emaillink {{mailto:{email}}} \\def \\emailtext {{{email}}}\n"
-    else:
-        main += "\\def \\emailicon {}\n\\def \\emaillink {} \\def \\emailtext {}\n"
-
-    # Empty fallbacks for layout macros
-    main += "\\def \\linkedinicon {}\n\\def \\linkedinlink {} \\def \\linkedintext {}\n"
-    main += "\\def \\githubicon {}\n\\def \\githublink {} \\def \\githubtext {}\n"
-    main += "\\def \\websiteicon {}\n\\def \\websitelink {} \\def \\websitetext {}\n"
-
-    main += settingsPart2
-
-    # Write website information about the user below header[cite: 5]
-    if profile.websites:
-        for website in profile.websites:
-            if "linkedin" in website.website_type.lower():
-                main += f"\\faLinkedin {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
-            elif "xing" in website.website_type.lower():
-                main += f"\\faXing {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
+        for website in profile.get("websites", []):
+            w_type = website.get("website_type", "").lower()
+            url = website.get("url", "")
+            if "linkedin" in w_type:
+                main += f"\n      \\color{{accent}}\\faLinkedin {{ }}  \\href{{{url}}}{{\\color{{text}}{url}}} & \\\\"
+            elif "github" in w_type:
+                main += f"\n      \\color{{accent}}\\faGithub {{ }}  \\href{{{url}}}{{\\color{{text}}{url}}} & \\\\"
             else:
-                main += f"\\faGlobe {{ }}  \\href{{{website.url}}}{{{website.url}}} \\newline\n"
+                main += f"\n      \\color{{accent}}\\faGlobe {{ }}  \\href{{{url}}}{{\\color{{text}}{url}}} & \\\\"
 
-    main += "\\newline\n"
+        main += "\n      \\end{tabular*}\n      \\vspace{8pt}\n"
 
-    # Write educational information about the user[cite: 5]
-    if profile.education:
-        main += f"\n%--- EDUCATION ---\n\\section{{\\faGraduationCap}}{{{educationTitle.get(language, 'Education')}}}\n"
-        for edu in profile.education:
-            start = format_date(edu.start_date, True)
-            end = format_date(edu.end_date, True)
-            city_country = (
-                f"{profile.address.city}, {profile.address.country}"
-                if profile.address
-                else ""
-            )
+    # Professional Summary
+    summary = profile.get("summary", "")
+    if summary:
+        main += f"\n\\resheading{{Professional Summary}}\n\\begin{{itemize}}\n\\item[] \\color{{text}} {summary}\n\\end{{itemize}}"
 
-            main += f"""  \\resumeEntryStart
-        \\resumeEntryTSDL
-        {{{edu.institution}}}{{{start} -- {end}}}
-        {{{edu.degree} {edu.field_of_study}}}{{{city_country}}}
-        \\resumeEntryEnd
-        """
+    # Work History
+    jobs = profile.get("jobs", [])
+    if jobs:
+        main += f"\n\\resheading{{{workTitle.get(language, 'Work experience')}}}\n\\begin{{itemize}}"
+        for job in jobs:
+            start = format_date(job.get("start"))
+            end = format_date(job.get("end"))
+            city_country = f"{city}, {country}" if city else ""
 
-    # Write experience information about the user[cite: 5]
-    if profile.experiences:
-        main += f"\n%--- EXPERIENCE ---\n\\section{{\\faPieChart}}{{{workTitle.get(language, 'Work experience')}}}\n"
-        for exp in profile.experiences:
-            start = format_date(exp.start_date)
-            end = format_date(exp.end_date)
-            city_country = (
-                f"{profile.address.city}, {profile.address.country}"
-                if profile.address
-                else ""
-            )
+            main += f"""\n        \\item[] \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{start} - {end}}}"""
+            
+            highlights = job.get("highlights", [])
+            if highlights:
+                main += "\n        \\begin{itemize}"
+                for hl in highlights:
+                    main += f"\n            \\resitem{{{hl}}}"
+                main += "\n        \\end{itemize}"
+        main += "\n      \\end{itemize}"
 
-            main += f"""  \\resumeEntryStart
-        \\resumeEntryTSDL
-        {{{exp.company_name}}}{{{start} -- {end}}}
-        {{{exp.job_title}}}{{{city_country}}}
-        \\resumeItemListStart
-        \\resumeItem {{{exp.description}}}
-        \\resumeItemListEnd
-        \\resumeEntryEnd
-        """
+    # Projects
+    projects = profile.get("projects", [])
+    if projects:
+        main += f"\n\\resheading{{Projects}}\n\\begin{{itemize}}"
+        for proj in projects:
+            start = format_date(proj.get("start"), True)
+            end = format_date(proj.get("end"), True)
+            date_str = f"{start} - {end}" if start != "Now" and end != "Now" else start
+            
+            main += f"""\n        \\item[] \\ressubheading{{{proj.get("name")}}}{{}}{{{proj.get("role")}}}{{{date_str}}}"""
+            
+            highlights = proj.get("highlights", [])
+            if highlights:
+                main += "\n        \\begin{itemize}"
+                for hl in highlights:
+                    main += f"\n            \\resitem{{{hl}}}"
+                main += "\n        \\end{itemize}"
+        main += "\n      \\end{itemize}"
 
-    # Write publication information about the user[cite: 5]
-    if profile.publications:
-        main += f"\n%--- PUBLICATIONS ---\n\\section{{\\faBook}}{{{publicationTitle.get(language, 'Publications')}}}\n"
-        for pub in profile.publications:
-            main += f"""  \\resumeEntryStart
-        \\resumeEntryTSDL
-        {{{pub.title}}}{{{pub.date}}}
-        {{{pub.publisher}}}{{}}
-        \\resumeItemListStart
-        \\resumeItem {{{pub.description}}}
-        \\resumeItemListEnd
-        \\resumeEntryEnd
-        """
+    # Education
+    education = profile.get("education", [])
+    if education:
+        main += f"\n\\resheading{{{educationTitle.get(language, 'Education')}}}\n\\begin{{itemize}}"
+        for edu in education:
+            start = format_date(edu.get("start_date"), True)
+            end = format_date(edu.get("end_date"), True)
+            city_country = f"{city}, {country}" if city else ""
 
-    # Write skill information about the user[cite: 5]
-    if profile.languages or profile.technical_skills:
-        main += f"\n%--- SKILLS ---\n\\section{{\\faGears}}{{{skillTitle.get(language, 'Technical Skills')}}} \\resumeEntryStart\n"
+            main += f"""\n\t\t    \\item[] \\ressubheading{{{edu.get("institution")}}}{{{city_country}}}{{{edu.get("degree")}}}{{{start} - {end}}}"""
+        main += "\n      \\end{itemize}"
 
-        if profile.languages:
-            langs = ", ".join([l.name for l in profile.languages])
-            main += f"  \\resumeEntryS{{{languageTitle.get(language, 'Language Skills')} }}{{{langs}}}\n"
+    # Courses & Certifications
+    courses = profile.get("courses", [])
+    if courses:
+        main += f"\n\\resheading{{Courses \\& Certifications}}\n\\begin{{itemize}}"
+        for crs in courses:
+            date = format_date(crs.get("date"), True)
+            main += f"""\n\t\t    \\item[] \\ressubheading{{{crs.get("title")}}}{{{crs.get("organized_by")}}}{{}}{{{date}}}"""
+        main += "\n      \\end{itemize}"
 
-        if profile.technical_skills:
-            skills = ", ".join(profile.technical_skills)
-            main += f"  \\resumeEntryS{{{otherTitle.get(language, 'Other Skills')} }}{{{skills}}}\n"
+    # Technical Skills / Languages
+    skills = profile.get("skills", [])
+    languages = profile.get("languages", [])
+    if skills or languages:
+        main += f"\n\\resheading{{{skillTitle.get(language, 'Skills')}}}\n\\begin{{itemize}}"
 
-        main += "  \\resumeEntryEnd\n"
+        if languages:
+            langs = ", ".join(languages)
+            main += f"\n\t\t    \\item[] \\textbf{{\\color{{primary}}{languageTitle.get(language, 'Language Skills')}}}: \\color{{text}}{langs}"
 
-    main += "\n\\end{document}"
+        if skills:
+            skls = ", ".join(skills)
+            main += f"\n\t\t    \\item[] \\textbf{{\\color{{primary}}Core Competencies}}: \\color{{text}}{skls}"
+
+        main += "\n      \\end{itemize}"
+
+    # Patents
+    patents = profile.get("patents", [])
+    if patents:
+        main += f"\n\\resheading{{Patents}}\n\\begin{{itemize}}"
+        for pat in patents:
+            main += f"""\n\t\t    \\item[] \\ressubheading{{{pat.get("title")}}}{{{pat.get("number")}}}{{{pat.get("status")}}}{{{pat.get("date")}}}"""
+        main += "\n      \\end{itemize}"
+
+    # Publications
+    publications = profile.get("publications", [])
+    if publications:
+        main += f"\n\\resheading{{{publicationTitle.get(language, 'Publications')}}}\n\\begin{{itemize}}"
+        for pub in publications:
+            main += f"""\n\t\t    \\item[] \\ressubheading{{{pub.get("title")}}}{{}}{{}}{{{pub.get("date")}}}"""
+        main += "\n      \\end{itemize}"
+
+    main += "\n    \\end{document}"
     return main
-
-
-def generateMainDesign2Enriched(profile, language="en"):
-    # With direct Pydantic models, enriched queries are handled in the ingestion phase,
-    # not the rendering phase. We can simply return the base generator.
-    return generateMainDesign2(profile, language)

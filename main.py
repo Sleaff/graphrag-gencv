@@ -71,11 +71,15 @@ async def cv_to_rdf(file: UploadFile) -> dict:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/generate-graphrag-cv")
-def generate_graphrag_cv(candidate_name: str, job_description: str) -> str:
-    profile_data = get_candidate_profile(candidate_name)
+class GraphragCVRequest(BaseModel):
+    candidate_name: str
+    job_description: str
+    design_choice: int = 1
 
-    final_cv = generate_tailored_cv(job_description, profile_data)
+@app.post("/generate-graphrag-cv")
+def generate_graphrag_cv(request: GraphragCVRequest) -> str:
+    """Generates a CV using the Graphrag pipeline: GraphDB + LLM."""
+    final_cv = generate_tailored_cv(request.job_description, request.candidate_name, design_choice=request.design_choice)
 
     return final_cv
 

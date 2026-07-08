@@ -1,6 +1,6 @@
 from datetime import datetime
 
-headerCV1 = r"""
+headerCV = r"""
     \documentclass[letterpaper,11pt]{article}
     \newlength{\outerbordwidth}
     \pagestyle{empty}
@@ -17,14 +17,12 @@ headerCV1 = r"""
     \usepackage{fontawesome}
     \usepackage{hyperref}
 
-
     %-----------------------------------------------------------
     %Edit these values as you see fit
 
     \setlength{\outerbordwidth}{3pt}  % Width of border outside of title bars
     \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
     \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
-
 
     %-----------------------------------------------------------
     %Margin setup
@@ -41,7 +39,6 @@ headerCV1 = r"""
     \setlength{\topmargin}{-0.3in}
     \setlength{\topskip}{0in}
     \setlength{\voffset}{0.1in}
-
 
     %-----------------------------------------------------------
     %Custom commands
@@ -95,14 +92,6 @@ skillTitle = {
     "it": "Altre competenze",
 }
 
-otherTitle = {
-    "en": "Other Skills",
-    "da": "Andre færdigheder",
-    "de": "Sonstige Skills",
-    "fr": "Autres compétences",
-    "it": "Altre competenze",
-}
-
 publicationTitle = {
     "en": "Publications",
     "da": "Publikationer",
@@ -110,7 +99,6 @@ publicationTitle = {
     "fr": "Publications",
     "it": "Pubblicazioni",
 }
-
 
 def format_date(date_str: str, as_year_only=False):
     if not date_str or date_str.lower() == "present":
@@ -121,11 +109,10 @@ def format_date(date_str: str, as_year_only=False):
     except ValueError:
         return date_str
 
-
 def generateMainDesign1(profile, language="en"):
-    main = headerCV1
+    main = headerCV
 
-    # Personal Information[cite: 1]
+    # Personal Information
     name = profile.get("name", "")
     if name:
         first_name = name.split(" ")[0]
@@ -134,26 +121,33 @@ def generateMainDesign1(profile, language="en"):
         addr = profile.get("address") or {}
         city = addr.get("city", "")
         country = addr.get("country", "")
+        
+        contact = profile.get("contact") or {}
+        phone = contact.get("phone", "")
 
         main += f"""
       \\begin{{tabular*}}{{7in}}{{l@{{\\extracolsep{{\\fill}}}}r}}
-      \\textbf{{\\Large {first_name} {last_name}}} & \\textbf{{\\today}} \\\\
+      \\textbf{{\\Large {first_name} {last_name}}} & {phone} \\\\
       {city}, {country} & \\\\"""
 
-        # Website loop[cite: 1]
         for website in profile.get("websites", []):
             w_type = website.get("website_type", "").lower()
             url = website.get("url", "")
             if "linkedin" in w_type:
                 main += f"\n      \\faLinkedin {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
-            elif "xing" in w_type:
-                main += f"\n      \\faXing {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
+            elif "github" in w_type:
+                main += f"\n      \\faGithub {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
             else:
                 main += f"\n      \\faGlobe {{ }}  \\href{{{url}}}{{{url}}} & \\\\"
 
-        main += "\n      \\end{tabular*}\n      \\\\"
+        main += "\n      \\end{tabular*}\n      \\vspace{5pt}\n"
 
-    # Work History[cite: 1]
+    # Professional Summary
+    summary = profile.get("summary", "")
+    if summary:
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{Professional Summary}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}\n      \\item[] {summary}\n      \\end{{itemize}}"
+
+    # Work History
     jobs = profile.get("jobs", [])
     if jobs:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{{workTitle.get(language, 'Work experience')}}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}"
@@ -162,12 +156,36 @@ def generateMainDesign1(profile, language="en"):
             end = format_date(job.get("end"))
             city_country = f"{city}, {country}" if city else ""
 
-            main += f"""
-        \\item \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{start} - {end}}}\\\\"""
-
+            main += f"""\n        \\item \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{start} - {end}}}"""
+            
+            highlights = job.get("highlights", [])
+            if highlights:
+                main += "\n        \\begin{itemize}"
+                for hl in highlights:
+                    main += f"\n            \\resitem{{{hl}}}"
+                main += "\n        \\end{itemize}"
         main += "\n      \\end{itemize}"
 
-    # Education[cite: 1]
+    # Projects
+    projects = profile.get("projects", [])
+    if projects:
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{Projects}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}"
+        for proj in projects:
+            start = format_date(proj.get("start"), True)
+            end = format_date(proj.get("end"), True)
+            date_str = f"{start} - {end}" if start != "Now" and end != "Now" else start
+            
+            main += f"""\n        \\item \\ressubheading{{{proj.get("name")}}}{{}}{{{proj.get("role")}}}{{{date_str}}}"""
+            
+            highlights = proj.get("highlights", [])
+            if highlights:
+                main += "\n        \\begin{itemize}"
+                for hl in highlights:
+                    main += f"\n            \\resitem{{{hl}}}"
+                main += "\n        \\end{itemize}"
+        main += "\n      \\end{itemize}"
+
+    # Education
     education = profile.get("education", [])
     if education:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{educationTitle.get(language, 'Education')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
@@ -176,43 +194,48 @@ def generateMainDesign1(profile, language="en"):
             end = format_date(edu.get("end_date"), True)
             city_country = f"{city}, {country}" if city else ""
 
-            main += f"""
-		    \\item \\ressubheading{{{edu.get("institution")}}}{{{city_country}}}{{{edu.get("degree")}}}{{{start} - {end}}}\\\\"""
-
+            main += f"""\n\t\t    \\item \\ressubheading{{{edu.get("institution")}}}{{{city_country}}}{{{edu.get("degree")}}}{{{start} - {end}}}"""
         main += "\n      \\end{itemize}"
 
-    # Technical Skills / Languages[cite: 1]
+    # Courses & Certifications
+    courses = profile.get("courses", [])
+    if courses:
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{Courses \\& Certifications}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
+        for crs in courses:
+            date = format_date(crs.get("date"), True)
+            main += f"""\n\t\t    \\item \\ressubheading{{{crs.get("title")}}}{{{crs.get("organized_by")}}}{{}}{{{date}}}"""
+        main += "\n      \\end{itemize}"
+
+    # Technical Skills / Languages
     skills = profile.get("skills", [])
     languages = profile.get("languages", [])
     if skills or languages:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{skillTitle.get(language, 'Skills')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
 
-        if languages:
-            langs = ", ".join(languages)
-            main += f"\n\t\t    \\item[] \\ressubheading{{{languageTitle.get(language, 'Language Skills')}}}{{}}{{}}{{}}\\\\*{langs}"
-
         if skills:
             skls = ", ".join(skills)
-            main += f"\n\t\t    \\item[] \\ressubheading{{Core Competencies}}{{}}{{}}{{}}\\\\*{skls}"
+            main += f"\n\t\t    \\item[] \\textbf{{Core Competencies}}: {skls}"
+
+        if languages:
+            langs = ", ".join(languages)
+            main += f"\n\t\t    \\item[] \\textbf{{{languageTitle.get(language, 'Language Skills')}}}: {langs}"
 
         main += "\n      \\end{itemize}"
 
-    # Publications[cite: 1]
+    # Patents
+    patents = profile.get("patents", [])
+    if patents:
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{Patents}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
+        for pat in patents:
+            main += f"""\n\t\t    \\item \\ressubheading{{{pat.get("title")}}}{{{pat.get("number")}}}{{{pat.get("status")}}}{{{pat.get("date")}}}"""
+        main += "\n      \\end{itemize}"
+
+    # Publications
     publications = profile.get("publications", [])
     if publications:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{publicationTitle.get(language, 'Publications')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
         for pub in publications:
-            main += f"""
-		    \\item \\ressubheading{{{pub.get("title")}}}{{}}{{}}{{{pub.get("date")}}}\\\\"""
-        main += "\n      \\end{itemize}"
-
-    # Honors/Awards[cite: 1]
-    honors = profile.get("honors", [])
-    if honors:
-        main += "\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{Honors \\& Awards}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{itemize}"
-        for honor in honors:
-            main += f"""
-		    \\item \\ressubheading{{{honor.get("title")}}}{{{honor.get("issuer")}}}{{}}{{{honor.get("date")}}}\\\\"""
+            main += f"""\n\t\t    \\item \\ressubheading{{{pub.get("title")}}}{{}}{{}}{{{pub.get("date")}}}"""
         main += "\n      \\end{itemize}"
 
     main += "\n    \\end{document}"
