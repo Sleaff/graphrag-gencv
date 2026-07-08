@@ -61,10 +61,10 @@ async def cv_to_rdf(file: UploadFile) -> dict:
         logger.info(f"Extracting text from file: {file.filename}")
         extraction_result = await extract_text(file)
         cv_markdown = extraction_result["text"]
-        logger.info(f"Extracted CV text: {cv_markdown}")
+        logger.debug(f"Extracted CV text: {cv_markdown}")
         logger.info("Using LLM to map CV to RDF...")
         result = await map_cv_to_rdf(cv_markdown)
-        logger.info(f"Generated RDF: {result}")
+        logger.debug(f"Generated RDF: {result}")
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Error occurred while converting CV to RDF: {e}")
@@ -75,11 +75,12 @@ class GraphragCVRequest(BaseModel):
     candidate_name: str
     job_description: str
     design_choice: int = 1
+    max_pages: int | None = None
 
 @app.post("/generate-graphrag-cv")
 def generate_graphrag_cv(request: GraphragCVRequest) -> str:
     """Generates a CV using the Graphrag pipeline: GraphDB + LLM."""
-    final_cv = generate_tailored_cv(request.job_description, request.candidate_name, design_choice=request.design_choice)
+    final_cv = generate_tailored_cv(request.job_description, request.candidate_name, design_choice=request.design_choice, max_pages=request.max_pages)
 
     return final_cv
 

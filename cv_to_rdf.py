@@ -138,6 +138,7 @@ class CandidateProfile(BaseModel):
     drivers_licence: Optional[str] = None
     short_description: Optional[str] = None
     long_description: Optional[str] = None
+    email: Optional[str] = None
     phone_mobile: Optional[str] = None
     phone_home: Optional[str] = None
     phone_work: Optional[str] = None
@@ -171,6 +172,7 @@ IMPORTANT: For the job 'description', ONLY extract the description of the main a
 Return ONLY a valid JSON object matching this schema exactly:
 {
     "name": "full name", "gender": "...", "nationality": "...", "date_of_birth": "...", "drivers_licence": "...", "short_description": "...", "long_description": "...",
+    "email": "...",
     "phone_mobile": "...", "phone_home": "...", "phone_work": "...",
     "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "career_level": "...", "job_type": "...", "raw_skills": ["..."], "description": "...", "is_current": false}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],

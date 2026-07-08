@@ -20,7 +20,7 @@ headerCV = r"""
     %-----------------------------------------------------------
     %Edit these values as you see fit
 
-    \setlength{\outerbordwidth}{3pt}  % Width of border outside of title bars
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
     \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
     \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
 
@@ -43,25 +43,25 @@ headerCV = r"""
     %-----------------------------------------------------------
     %Custom commands
     \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
-    \newcommand{\resheading}[1]{\vspace{8pt}
+    \newcommand{\resheading}[1]{\vspace{6pt}
     \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
         \begin{shaded}
-    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{4pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.762in][l]{\large #1} \vphantom{p\^{E}}}}}}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
         \end{shaded}
-    }\vspace{-5pt}
+    }\vspace{-6pt}
     }
     \newcommand{\ressubheading}[4]{
-    \begin{tabular*}{6.5in}{l@{\extracolsep{\fill}}r}
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
             \textbf{#1} & #2 \\
             \textit{#3} & \textit{#4} \\
-    \end{tabular*}\vspace{-6pt}}
+    \end{tabular*}\vspace{-8pt}}
     %-----------------------------------------------------------
 
     \begin{document}
     """
 
 workTitle = {
-    "en": "Work experience",
+    "en": "Work Experience",
     "da": "Arbejdserfaring",
     "de": "Berufserfahrung",
     "fr": "Expérience de travail",
@@ -77,7 +77,7 @@ educationTitle = {
 }
 
 languageTitle = {
-    "en": "Language Skills",
+    "en": "Languages",
     "da": "Sprogkundskaber",
     "de": "Sprachkenntnisse",
     "fr": "Compétences linguistiques",
@@ -124,11 +124,12 @@ def generateMainDesign1(profile, language="en"):
         
         contact = profile.get("contact") or {}
         phone = contact.get("phone", "")
+        email = contact.get("email", "")
 
         main += f"""
       \\begin{{tabular*}}{{7in}}{{l@{{\\extracolsep{{\\fill}}}}r}}
       \\textbf{{\\Large {first_name} {last_name}}} & {phone} \\\\
-      {city}, {country} & \\\\"""
+      {city}, {country} & {email} \\\\"""
 
         for website in profile.get("websites", []):
             w_type = website.get("website_type", "").lower()
@@ -145,12 +146,12 @@ def generateMainDesign1(profile, language="en"):
     # Professional Summary
     summary = profile.get("summary", "")
     if summary:
-        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{Professional Summary}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}\n      \\item[] {summary}\n      \\end{{itemize}}"
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{Summary}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}\n      \\item[] {summary}\n      \\end{{itemize}}"
 
     # Work History
     jobs = profile.get("jobs", [])
     if jobs:
-        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{{workTitle.get(language, 'Work experience')}}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}"
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\resheading{{{workTitle.get(language, 'Work Experience')}}}\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n      \\begin{{itemize}}"
         for job in jobs:
             start = format_date(job.get("start"))
             end = format_date(job.get("end"))
@@ -206,20 +207,29 @@ def generateMainDesign1(profile, language="en"):
             main += f"""\n\t\t    \\item \\ressubheading{{{crs.get("title")}}}{{{crs.get("organized_by")}}}{{}}{{{date}}}"""
         main += "\n      \\end{itemize}"
 
-    # Technical Skills / Languages
+    # Technical Skills
     skills = profile.get("skills", [])
-    languages = profile.get("languages", [])
-    if skills or languages:
+    if skills:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{skillTitle.get(language, 'Skills')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
+        skls = ", ".join(skills)
+        main += f"\n\t\t    \\item[] {skls}"
+        main += "\n      \\end{itemize}"
 
-        if skills:
-            skls = ", ".join(skills)
-            main += f"\n\t\t    \\item[] \\textbf{{Core Competencies}}: {skls}"
-
-        if languages:
-            langs = ", ".join(languages)
-            main += f"\n\t\t    \\item[] \\textbf{{{languageTitle.get(language, 'Language Skills')}}}: {langs}"
-
+    # Languages
+    languages = profile.get("languages", [])
+    if languages:
+        main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{languageTitle.get(language, 'Languages')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
+        for lang in languages:
+            if isinstance(lang, dict):
+                lang_name = lang.get("name", "")
+                proficiency = lang.get("proficiency", "")
+                if lang_name and proficiency:
+                    # Made the language bold and fixed the formatting
+                    main += f"\n\t\t    \\item[] \\textbf{{{lang_name}}}: {proficiency}"
+                elif lang_name:
+                    main += f"\n\t\t    \\item[] {lang_name}"
+            else:
+                main += f"\n\t\t    \\item[] {lang}"
         main += "\n      \\end{itemize}"
 
     # Patents

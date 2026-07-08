@@ -14,7 +14,7 @@ def get_candidate_profile(candidate_name: str):
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     
     SELECT 
-        ?gender ?nationality ?dob ?driverLicence ?shortDesc ?longDesc 
+        ?gender ?nationality ?dob ?driverLicence ?shortDesc ?longDesc ?email
         ?phoneMobile ?phoneHome ?phoneWork 
         ?imName ?imUsername 
         ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?jobSkillUri ?jobSkillName ?jobParentLabel
@@ -38,6 +38,7 @@ def get_candidate_profile(candidate_name: str):
         OPTIONAL {{ ?person my0:driversLicence ?driverLicence . }}
         OPTIONAL {{ ?person my0:personShortDescription ?shortDesc . }}
         OPTIONAL {{ ?person my0:personLongDescription ?longDesc . }}
+        OPTIONAL {{ ?person my0:email ?email . }}
         OPTIONAL {{ ?person my0:phoneNumberMobile ?phoneMobile . }}
         OPTIONAL {{ ?person my0:phoneNumberHome ?phoneHome . }}
         OPTIONAL {{ ?person my0:phoneNumberWork ?phoneWork . }}
@@ -147,6 +148,7 @@ def get_candidate_profile(candidate_name: str):
         "drivers_licence": "",
         "short_description": "",
         "long_description": "",
+        "email": "",
         "phone_mobile": "",
         "phone_home": "",
         "phone_work": "",
@@ -181,6 +183,8 @@ def get_candidate_profile(candidate_name: str):
             profile["short_description"] = row["shortDesc"]["value"]
         if "longDesc" in row and not profile["long_description"]:
             profile["long_description"] = row["longDesc"]["value"]
+        if "email" in row and not profile["email"]:
+            profile["email"] = row["email"]["value"]
         if "phoneMobile" in row and not profile["phone_mobile"]:
             profile["phone_mobile"] = row["phoneMobile"]["value"]
         if "phoneHome" in row and not profile["phone_home"]:
@@ -387,6 +391,7 @@ def get_candidate_profile(candidate_name: str):
         "drivers_licence": profile["drivers_licence"],
         "short_description": profile["short_description"],
         "long_description": profile["long_description"],
+        "email": profile["email"],
         "phone_mobile": profile["phone_mobile"],
         "phone_home": profile["phone_home"],
         "phone_work": profile["phone_work"],

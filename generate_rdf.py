@@ -92,7 +92,14 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
                 Literal(candidate_data["long_description"], datatype=XSD.string),
             )
         )
-
+    if candidate_data.get("email"):
+        g.add(
+            (
+                person_uri,
+                MY0.email,
+                Literal(candidate_data["email"], datatype=XSD.string),
+            )
+        )
     if candidate_data.get("phone_mobile"):
         g.add(
             (
