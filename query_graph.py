@@ -1,492 +1,525 @@
 import json
 
-from SPARQLWrapper import JSON, SPARQLWrapper, POST
+from rdflib import BNode, Graph, Literal, Namespace, RDF, URIRef
+from rdflib.namespace import RDFS, SKOS
+from SPARQLWrapper import JSON, POST, SPARQLWrapper
 
 from settings import GRAPHDB_URL
 
+MY0 = Namespace("http://example.com/resume2rdf_ontology.rdf#")
 
-def get_candidate_profile(candidate_name: str):
+
+def sparql_string(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def run_select(query: str) -> list[dict]:
     sparql = SPARQLWrapper(GRAPHDB_URL)
-
-    query = f"""
-    PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
-    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    
-    SELECT 
-        ?gender ?nationality ?dob ?driverLicence ?shortDesc ?longDesc ?email
-        ?phoneMobile ?phoneHome ?phoneWork 
-        ?imName ?imUsername 
-        ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?jobSkillUri ?jobSkillName ?jobParentLabel
-        ?jobCity ?jobCountry
-        ?degree ?institution ?eduStart ?eduGrad ?eduDesc 
-        ?crsTitle ?crsDesc ?crsUrl ?crsStart ?crsEnd ?crsCert ?crsOrg 
-        ?patTitle ?patOffice ?patNum ?patInv ?patUrl ?patDesc ?patDate ?patStatus 
-        ?projName ?projRole ?projStart ?projEnd ?projDesc ?projCreator ?projUrl ?projCurrent 
-        ?skillUri ?skillName ?parentLabel ?langName ?langProf 
-        ?targetTitle ?relocate ?travel ?city ?country ?url ?type 
-        ?hTitle ?hIssuer ?hDate ?pTitle ?pDate ?pDesc ?refName ?refRel 
-        ?otherType ?otherDesc
-    WHERE {{
-        ?cv a my0:CV ;
-            my0:aboutPerson ?person .
-        ?person my0:firstName "{candidate_name}" .
-        
-        # Person Details
-        OPTIONAL {{ ?person my0:gender ?gObj . ?gObj rdfs:label ?gender . }}
-        OPTIONAL {{ ?person my0:hasNationality ?nat . BIND(REPLACE(STR(?nat), ".*#", "") AS ?nationality) }}
-        OPTIONAL {{ ?person my0:dateOfBirth ?dob . }}
-        OPTIONAL {{ ?person my0:driversLicence ?driverLicence . }}
-        OPTIONAL {{ ?person my0:personShortDescription ?shortDesc . }}
-        OPTIONAL {{ ?person my0:personLongDescription ?longDesc . }}
-        OPTIONAL {{ ?person my0:email ?email . }}
-        OPTIONAL {{ ?person my0:phoneNumberMobile ?phoneMobile . }}
-        OPTIONAL {{ ?person my0:phoneNumberHome ?phoneHome . }}
-        OPTIONAL {{ ?person my0:phoneNumberWork ?phoneWork . }}
-
-        OPTIONAL {{
-            ?person my0:hasInstantMessaging ?im .
-            ?im my0:instantMessagingUsername ?imUsername .
-            OPTIONAL {{ ?im my0:instantMessagingName ?imObj . ?imObj rdfs:label ?imName . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasWorkHistory ?job .
-            ?job my0:jobTitle ?jobTitle ; my0:startDate ?startDate ; my0:employedIn ?company .
-            ?company my0:orgName ?companyName .
-            OPTIONAL {{ ?job my0:endDate ?endDate . }}
-            OPTIONAL {{ ?job my0:jobDescription ?jobDescription . }}
-            OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
-            OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
-
-            OPTIONAL {{ 
-                ?company my0:orgAddress ?jobAddr . 
-                OPTIONAL {{ ?jobAddr my0:city ?jobCity . }}
-                OPTIONAL {{ ?jobAddr my0:country ?jobCountry . }}
-            }}
-            
-            OPTIONAL {{ 
-                ?job my0:hasSkill ?jobSkillUri .
-                OPTIONAL {{ ?jobSkillUri my0:skillName ?jobSkillName . }}
-                OPTIONAL {{ 
-                    ?jobSkillUri skos:broader ?jobParentUri .
-                    ?jobParentUri rdfs:label ?jobParentLabel .
-                }}
-            }}
-        }}
-        
-        OPTIONAL {{
-            ?cv my0:hasEducation ?edu .
-            ?edu my0:degreeFieldOfStudy ?degree ; my0:studiedIn ?eduOrg .
-            ?eduOrg my0:orgName ?institution .
-            OPTIONAL {{ ?edu my0:eduStartDate ?eduStart . }}
-            OPTIONAL {{ ?edu my0:eduGradDate ?eduGrad . }}
-            OPTIONAL {{ ?edu my0:eduDescription ?eduDesc . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasCourse ?crs .
-            ?crs my0:courseTitle ?crsTitle .
-            OPTIONAL {{ ?crs my0:courseDescription ?crsDesc . }}
-            OPTIONAL {{ ?crs my0:courseURL ?crsUrl . }}
-            OPTIONAL {{ ?crs my0:courseStartDate ?crsStart . }}
-            OPTIONAL {{ ?crs my0:courseFinishDate ?crsEnd . }}
-            OPTIONAL {{ ?crs my0:hasCertification ?crsCert . }}
-            OPTIONAL {{ ?crs my0:organizedBy ?crsOrgObj . ?crsOrgObj my0:orgName ?crsOrg . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasPatent ?pat .
-            ?pat my0:patentTitle ?patTitle .
-            OPTIONAL {{ ?pat my0:patentOffice ?patOffice . }}
-            OPTIONAL {{ ?pat my0:patentNumber ?patNum . }}
-            OPTIONAL {{ ?pat my0:patentInventor ?patInv . }}
-            OPTIONAL {{ ?pat my0:patentURL ?patUrl . }}
-            OPTIONAL {{ ?pat my0:patentDescription ?patDesc . }}
-            OPTIONAL {{ ?pat my0:patentIssuedDate ?patDate . }}
-            OPTIONAL {{ ?pat my0:patentStatus ?patObj . ?patObj rdfs:label ?patStatus . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasProject ?proj .
-            ?proj my0:projectName ?projName .
-            OPTIONAL {{ ?proj my0:projectRole ?projRole . }}
-            OPTIONAL {{ ?proj my0:projectStartDate ?projStart . }}
-            OPTIONAL {{ ?proj my0:projectEndDate ?projEnd . }}
-            OPTIONAL {{ ?proj my0:projectDescription ?projDesc . }}
-            OPTIONAL {{ ?proj my0:projectCreator ?projCreator . }}
-            OPTIONAL {{ ?proj my0:projectURL ?projUrl . }}
-            OPTIONAL {{ ?proj my0:projectIsCurrent ?projCurrent . }}
-        }}
-        
-        OPTIONAL {{ 
-            ?cv my0:hasSkill ?skillUri . 
-            OPTIONAL {{ ?skillUri my0:skillName ?skillName . }}
-            OPTIONAL {{ 
-                ?skillUri skos:broader ?parentUri .
-                ?parentUri rdfs:label ?parentLabel .
-            }}
-        }}
-        
-        OPTIONAL {{
-            ?person my0:hasSkill ?lang . ?lang a my0:LanguageSkill ; my0:skillName ?langName .
-            OPTIONAL {{ ?lang my0:languageSkillProficiency ?profObj . ?profObj rdfs:label ?langProf . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasOtherInfo ?other .
-            ?other my0:otherInfoDescription ?otherDesc .
-            OPTIONAL {{ ?other my0:otherInfoType ?otherObj . ?otherObj rdfs:label ?otherType . }}
-        }}
-
-        OPTIONAL {{ ?person my0:hasAddress ?addr . ?addr my0:city ?city ; my0:country ?country . }}
-
-        OPTIONAL {{
-            ?cv my0:hasWebsite ?website .
-            ?website my0:websiteURL ?url .
-            OPTIONAL {{ ?website my0:websiteType ?type . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasTarget ?target .
-            ?target my0:targetJobTitle ?targetTitle .
-            OPTIONAL {{ ?target my0:targetConditionWillRelocate ?relocate . }}
-            OPTIONAL {{ ?target my0:targetConditionWillTravel ?travel . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasHonorAward ?honor .
-            ?honor my0:honorTitle ?hTitle .
-            OPTIONAL {{ ?honor my0:honorIssuer ?hIssuer . }}
-            OPTIONAL {{ ?honor my0:honorIssuedDate ?hDate . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasPublication ?pub .
-            ?pub my0:publicationTitle ?pTitle .
-            OPTIONAL {{ ?pub my0:publicationDate ?pDate . }}
-            OPTIONAL {{ ?pub my0:publicationDescription ?pDesc . }}
-        }}
-
-        OPTIONAL {{
-            ?cv my0:hasReference ?ref .
-            ?ref my0:referenceName ?refName .
-            OPTIONAL {{ ?ref my0:referenceRelation ?refRel . }}
-        }}
-    }}
-    """
     sparql.setMethod(POST)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
+    response = sparql.query().convert()
+    return response["results"]["bindings"]
 
-    profile = {
-        "name": candidate_name,
-        "gender": "",
-        "nationality": "",
-        "date_of_birth": "",
-        "drivers_licence": "",
-        "short_description": "",
-        "long_description": "",
-        "email": "",
-        "phone_mobile": "",
-        "phone_home": "",
-        "phone_work": "",
-        "jobs": {},
-        "education": {},
-        "courses": [],
-        "patents": [],
-        "projects": [],
-        "skills": {},
-        "languages": {},
-        "target": None,
-        "address": None,
-        "websites": {},
-        "instant_messaging": [],
-        "honors": [],
-        "publications": [],
-        "references": [],
-        "other_info": [],
+
+def binding_to_term(binding: dict):
+    binding_type = binding.get("type")
+    value = binding["value"]
+    if binding_type == "uri":
+        return URIRef(value)
+    if binding_type == "bnode":
+        return BNode(value)
+    datatype = URIRef(binding["datatype"]) if binding.get("datatype") else None
+    return Literal(value, lang=binding.get("xml:lang"), datatype=datatype)
+
+
+def find_candidate_graph(candidate_name: str) -> tuple[URIRef, URIRef, URIRef]:
+    query = f"""
+    PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
+    SELECT DISTINCT ?graph ?cv ?person WHERE {{
+        GRAPH ?graph {{
+            ?cv a my0:CV ;
+                my0:aboutPerson ?person .
+            ?person my0:firstName {sparql_string(candidate_name)} .
+        }}
+    }}
+    LIMIT 1
+    """
+    rows = run_select(query)
+    if not rows:
+        raise LookupError(f"Candidate not found: {candidate_name}")
+
+    row = rows[0]
+    return (
+        URIRef(row["graph"]["value"]),
+        URIRef(row["cv"]["value"]),
+        URIRef(row["person"]["value"]),
+    )
+
+
+def load_named_graph(graph_uri: URIRef) -> Graph:
+    rows = run_select(
+        f"SELECT ?s ?p ?o WHERE {{ GRAPH <{graph_uri}> {{ ?s ?p ?o }} }}"
+    )
+    graph = Graph()
+    for row in rows:
+        graph.add(
+            (
+                binding_to_term(row["s"]),
+                binding_to_term(row["p"]),
+                binding_to_term(row["o"]),
+            )
+        )
+    return graph
+
+
+def get_value(graph: Graph, subject, predicate, default: str = "") -> str:
+    value = graph.value(subject, predicate)
+    return str(value) if value is not None else default
+
+
+def get_boolean(
+    graph: Graph,
+    subject,
+    predicate,
+    default: bool = False,
+) -> bool:
+    value = graph.value(subject, predicate)
+    if value is None:
+        return default
+    if isinstance(value, Literal):
+        converted = value.toPython()
+        if isinstance(converted, bool):
+            return converted
+    return str(value).strip().lower() in {"true", "1", "yes"}
+
+
+def get_label(graph: Graph, resource, default: str = "") -> str:
+    if resource is None:
+        return default
+    return get_value(graph, resource, RDFS.label, default or str(resource))
+
+
+def get_country_name(graph: Graph, address_uri) -> str:
+    country_uri = graph.value(address_uri, MY0.country)
+    if country_uri is None:
+        return ""
+    country_label = graph.value(country_uri, RDFS.label)
+    if country_label is not None:
+        return str(country_label)
+    return str(country_uri).rsplit("#", 1)[-1]
+
+
+def get_address(graph: Graph, address_uri):
+    if address_uri is None:
+        return None
+    address = {
+        "city": get_value(graph, address_uri, MY0.city),
+        "country": get_country_name(graph, address_uri),
+        "street": get_value(graph, address_uri, MY0.street),
+        "postal_code": get_value(graph, address_uri, MY0.postalCode),
     }
+    return address if any(address.values()) else None
 
-    for row in results["results"]["bindings"]:
-        # Scalars (Person details)
-        if "gender" in row and not profile["gender"]:
-            profile["gender"] = row["gender"]["value"]
-        if "nationality" in row and not profile["nationality"]:
-            profile["nationality"] = row["nationality"]["value"]
-        if "dob" in row and not profile["date_of_birth"]:
-            profile["date_of_birth"] = row["dob"]["value"]
-        if "driverLicence" in row and not profile["drivers_licence"]:
-            profile["drivers_licence"] = row["driverLicence"]["value"]
-        if "shortDesc" in row and not profile["short_description"]:
-            profile["short_description"] = row["shortDesc"]["value"]
-        if "longDesc" in row and not profile["long_description"]:
-            profile["long_description"] = row["longDesc"]["value"]
-        if "email" in row and not profile["email"]:
-            profile["email"] = row["email"]["value"]
-        if "phoneMobile" in row and not profile["phone_mobile"]:
-            profile["phone_mobile"] = row["phoneMobile"]["value"]
-        if "phoneHome" in row and not profile["phone_home"]:
-            profile["phone_home"] = row["phoneHome"]["value"]
-        if "phoneWork" in row and not profile["phone_work"]:
-            profile["phone_work"] = row["phoneWork"]["value"]
 
-        if "jobTitle" in row:
-            start_val = row.get("startDate", {}).get("value", "UnknownStart")
-            job_key = row["jobTitle"]["value"] + row["companyName"]["value"] + start_val
-            
-            if job_key not in profile["jobs"]:
-                profile["jobs"][job_key] = {
-                    "title": row["jobTitle"]["value"],
-                    "company": row["companyName"]["value"],
-                    "start": row.get("startDate", {}).get("value", ""),
-                    "end": row.get("endDate", {}).get("value", "Present"),
-                    "description": row.get("jobDescription", {}).get("value", ""),
-                    "career_level": row.get("careerLevel", {}).get("value", ""),
-                    "job_type": row.get("jobType", {}).get("value", ""),
-                    "address": {
-                        "city": row.get("jobCity", {}).get("value", ""),
-                        "country": row.get("jobCountry", {}).get("value", "")
-                    },
-                    "raw_skills": {},
-                }
-            else:
-                # Ensure address updates if missing in first row but present in subsequent rows
-                if not profile["jobs"][job_key]["address"]["city"] and "jobCity" in row:
-                    profile["jobs"][job_key]["address"]["city"] = row["jobCity"]["value"]
-                if not profile["jobs"][job_key]["address"]["country"] and "jobCountry" in row:
-                    profile["jobs"][job_key]["address"]["country"] = row["jobCountry"]["value"]
-                
-            if "jobSkillUri" in row:
-                j_uri = row["jobSkillUri"]["value"]
-                j_name = row.get("jobSkillName", {}).get("value", j_uri.split("/")[-1])
+def get_vector_id(graph: Graph, entity_uri) -> str:
+    return get_value(graph, entity_uri, MY0.hasVectorReference)
 
-                if j_name not in profile["jobs"][job_key]["raw_skills"]:
-                    profile["jobs"][job_key]["raw_skills"][j_name] = {
-                        "name": j_name,
-                        "parents": set(),
-                    }
 
-                if "jobParentLabel" in row:
-                    profile["jobs"][job_key]["raw_skills"][j_name]["parents"].add(
-                        row["jobParentLabel"]["value"]
-                    )
+def get_skills(graph: Graph, owner_uri) -> list[dict]:
+    skills = []
+    for skill_uri in graph.objects(owner_uri, MY0.hasSkill):
+        if (skill_uri, RDF.type, MY0.LanguageSkill) in graph:
+            continue
 
-        # Education
-        if "degree" in row:
-            edu_key = row["degree"]["value"] + row["institution"]["value"]
-            profile["education"][edu_key] = {
-                "degree": row["degree"]["value"],
-                "institution": row["institution"]["value"],
-                "start_date": row.get("eduStart", {}).get("value", "N/A"),
-                "end_date": row.get("eduGrad", {}).get("value", "N/A"),
-                "description": row.get("eduDesc", {}).get("value", ""),
+        skill_name = get_value(graph, skill_uri, MY0.skillName)
+        if not skill_name:
+            skill_name = str(skill_uri).rsplit("/", 1)[-1]
+
+        parents = sorted(
+            {
+                get_label(graph, parent_uri)
+                for parent_uri in graph.objects(skill_uri, SKOS.broader)
+                if get_label(graph, parent_uri)
             }
-
-        # Courses
-        if "crsTitle" in row:
-            crs_entry = {
-                "title": row["crsTitle"]["value"],
-                "description": row.get("crsDesc", {}).get("value", ""),
-                "url": row.get("crsUrl", {}).get("value", ""),
-                "start_date": row.get("crsStart", {}).get("value", ""),
-                "finish_date": row.get("crsEnd", {}).get("value", ""),
-                "organized_by": row.get("crsOrg", {}).get("value", ""),
-                "has_certification": row.get("crsCert", {}).get("value", "false").lower() == "true",
+        )
+        skills.append(
+            {
+                "name": skill_name,
+                "parents": parents,
             }
-            if crs_entry not in profile["courses"]:
-                profile["courses"].append(crs_entry)
+        )
 
-        # Patents
-        if "patTitle" in row:
-            pat_entry = {
-                "title": row["patTitle"]["value"],
-                "office": row.get("patOffice", {}).get("value", ""),
-                "number": row.get("patNum", {}).get("value", ""),
-                "inventor": row.get("patInv", {}).get("value", ""),
-                "url": row.get("patUrl", {}).get("value", ""),
-                "description": row.get("patDesc", {}).get("value", ""),
-                "issued_date": row.get("patDate", {}).get("value", ""),
-                "status": row.get("patStatus", {}).get("value", ""),
+    return sorted(skills, key=lambda item: item["name"].casefold())
+
+
+def get_candidate_profile(candidate_name: str):
+    graph_uri, cv_uri, person_uri = find_candidate_graph(candidate_name)
+    graph = load_named_graph(graph_uri)
+
+    gender_uri = graph.value(person_uri, MY0.gender)
+    nationality_uri = graph.value(person_uri, MY0.hasNationality)
+    nationality = get_label(graph, nationality_uri, "")
+    if not nationality and nationality_uri:
+        nationality = str(nationality_uri).rsplit("#", 1)[-1]
+
+    jobs = []
+    for work_uri in graph.objects(cv_uri, MY0.hasWorkHistory):
+        company_uri = graph.value(work_uri, MY0.employedIn)
+        company_address_uri = (
+            graph.value(company_uri, MY0.orgAddress)
+            if company_uri is not None
+            else None
+        )
+        jobs.append(
+            {
+                "title": get_value(graph, work_uri, MY0.jobTitle),
+                "company": get_value(graph, company_uri, MY0.orgName)
+                if company_uri
+                else "",
+                "start": get_value(graph, work_uri, MY0.startDate),
+                "end": get_value(graph, work_uri, MY0.endDate),
+                "description": get_value(graph, work_uri, MY0.jobDescription),
+                "is_current": get_boolean(graph, work_uri, MY0.isCurrent),
+                "career_level": get_label(
+                    graph,
+                    graph.value(work_uri, MY0.careerLevel),
+                    "",
+                ),
+                "job_type": get_label(
+                    graph,
+                    graph.value(work_uri, MY0.jobType),
+                    "",
+                ),
+                "address": get_address(graph, company_address_uri),
+                "raw_skills": get_skills(graph, work_uri),
+                # "vector_id": get_vector_id(graph, work_uri),
             }
-            if pat_entry not in profile["patents"]:
-                profile["patents"].append(pat_entry)
+        )
 
-        # Projects
-        if "projName" in row:
-            proj_entry = {
-                "name": row["projName"]["value"],
-                "role": row.get("projRole", {}).get("value", ""),
-                "start_date": row.get("projStart", {}).get("value", ""),
-                "end_date": row.get("projEnd", {}).get("value", ""),
-                "description": row.get("projDesc", {}).get("value", ""),
-                "creator": row.get("projCreator", {}).get("value", ""),
-                "url": row.get("projUrl", {}).get("value", ""),
-                "is_current": row.get("projCurrent", {}).get("value", ""),
+    education = []
+    for edu_uri in graph.objects(cv_uri, MY0.hasEducation):
+        institution_uri = graph.value(edu_uri, MY0.studiedIn)
+        degree_uri = graph.value(edu_uri, MY0.degree)
+        education.append(
+            {
+                "degree": get_label(graph, degree_uri, ""),
+                "institution": get_value(graph, institution_uri, MY0.orgName)
+                if institution_uri
+                else "",
+                "start_date": get_value(graph, edu_uri, MY0.eduStartDate),
+                "end_date": get_value(graph, edu_uri, MY0.eduGradDate),
+                "field_of_study": get_value(
+                    graph,
+                    edu_uri,
+                    MY0.degreeFieldOfStudy,
+                ),
+                "description": get_value(graph, edu_uri, MY0.eduDescription),
+                # "vector_id": get_vector_id(graph, edu_uri),
             }
-            if proj_entry not in profile["projects"]:
-                profile["projects"].append(proj_entry)
+        )
 
-        # Instant Messaging
-        if "imUsername" in row:
-            im_entry = {
-                "name": row.get("imName", {}).get("value", "IM"),
-                "username": row["imUsername"]["value"],
+    courses = []
+    for course_uri in graph.objects(cv_uri, MY0.hasCourse):
+        organizer_uri = graph.value(course_uri, MY0.organizedBy)
+        courses.append(
+            {
+                "title": get_value(graph, course_uri, MY0.courseTitle),
+                "description": get_value(
+                    graph,
+                    course_uri,
+                    MY0.courseDescription,
+                ),
+                "url": get_value(graph, course_uri, MY0.courseURL),
+                "start_date": get_value(
+                    graph,
+                    course_uri,
+                    MY0.courseStartDate,
+                ),
+                "finish_date": get_value(
+                    graph,
+                    course_uri,
+                    MY0.courseFinishDate,
+                ),
+                "has_certification": get_boolean(
+                    graph,
+                    course_uri,
+                    MY0.hasCertification,
+                ),
+                "organized_by": get_value(graph, organizer_uri, MY0.orgName)
+                if organizer_uri
+                else "",
+                # "vector_id": get_vector_id(graph, course_uri),
             }
-            if im_entry not in profile["instant_messaging"]:
-                profile["instant_messaging"].append(im_entry)
+        )
 
-        # Other Info
-        if "otherDesc" in row:
-            other_entry = {
-                "type": row.get("otherType", {}).get("value", "Misc"),
-                "description": row["otherDesc"]["value"],
+    patents = []
+    for patent_uri in graph.objects(cv_uri, MY0.hasPatent):
+        patents.append(
+            {
+                "title": get_value(graph, patent_uri, MY0.patentTitle),
+                "office": get_value(graph, patent_uri, MY0.patentOffice),
+                "number": get_value(graph, patent_uri, MY0.patentNumber),
+                "inventor": get_value(graph, patent_uri, MY0.patentInventor),
+                "url": get_value(graph, patent_uri, MY0.patentURL),
+                "description": get_value(
+                    graph,
+                    patent_uri,
+                    MY0.patentDescription,
+                ),
+                "issued_date": get_value(
+                    graph,
+                    patent_uri,
+                    MY0.patentIssuedDate,
+                ),
+                "status": get_label(
+                    graph,
+                    graph.value(patent_uri, MY0.patentStatus),
+                    "",
+                ),
+                # "vector_id": get_vector_id(graph, patent_uri),
             }
-            if other_entry not in profile["other_info"]:
-                profile["other_info"].append(other_entry)
+        )
 
-        # Global Technical Skills
-        if "skillUri" in row:
-            uri = row["skillUri"]["value"]
-            skill_name = row.get("skillName", {}).get("value", uri.split("/")[-1])
+    projects = []
+    for project_uri in graph.objects(cv_uri, MY0.hasProject):
+        projects.append(
+            {
+                "name": get_value(graph, project_uri, MY0.projectName),
+                "role": get_value(graph, project_uri, MY0.projectRole),
+                "start_date": get_value(
+                    graph,
+                    project_uri,
+                    MY0.projectStartDate,
+                ),
+                "end_date": get_value(
+                    graph,
+                    project_uri,
+                    MY0.projectEndDate,
+                ),
+                "description": get_value(
+                    graph,
+                    project_uri,
+                    MY0.projectDescription,
+                ),
+                "creator": get_value(graph, project_uri, MY0.projectCreator),
+                "url": get_value(graph, project_uri, MY0.projectURL),
+                "is_current": get_boolean(
+                    graph,
+                    project_uri,
+                    MY0.projectIsCurrent,
+                ),
+                # "vector_id": get_vector_id(graph, project_uri),
+            }
+        )
 
-            if skill_name not in profile["skills"]:
-                profile["skills"][skill_name] = {
-                    "name": skill_name,
-                    "parents": set(),
-                }
+    languages = []
+    for language_uri in graph.objects(person_uri, MY0.hasSkill):
+        if (language_uri, RDF.type, MY0.LanguageSkill) not in graph:
+            continue
+        languages.append(
+            {
+                "name": get_value(graph, language_uri, MY0.skillName),
+                "proficiency": get_label(
+                    graph,
+                    graph.value(language_uri, MY0.languageSkillProficiency),
+                    "",
+                ),
+            }
+        )
 
-            if "parentLabel" in row:
-                profile["skills"][skill_name]["parents"].add(
-                    row["parentLabel"]["value"]
+    target = None
+    target_uri = graph.value(cv_uri, MY0.hasTarget)
+    if target_uri:
+        target = {
+            "job_title": get_value(graph, target_uri, MY0.targetJobTitle),
+            "job_mode": get_label(
+                graph,
+                graph.value(target_uri, MY0.targetJobType),
+                "",
+            ),
+            "relocate": get_boolean(
+                graph,
+                target_uri,
+                MY0.targetConditionWillRelocate,
+            ),
+            "travel": get_boolean(
+                graph,
+                target_uri,
+                MY0.targetConditionWillTravel,
+            ),
+        }
+
+    websites = []
+    for website_uri in graph.objects(person_uri, MY0.hasWebsite):
+        websites.append(
+            {
+                "url": get_value(graph, website_uri, MY0.websiteURL),
+                "website_type": get_label(
+                    graph,
+                    graph.value(website_uri, MY0.websiteType),
+                    "",
+                ),
+            }
+        )
+
+    instant_messaging = []
+    for messaging_uri in graph.objects(person_uri, MY0.hasInstantMessaging):
+        instant_messaging.append(
+            {
+                "name": get_label(
+                    graph,
+                    graph.value(messaging_uri, MY0.instantMessagingName),
+                    "",
+                ),
+                "username": get_value(
+                    graph,
+                    messaging_uri,
+                    MY0.instantMessagingUsername,
+                ),
+            }
+        )
+
+    honors = []
+    for honor_uri in graph.objects(cv_uri, MY0.hasHonorAward):
+        honors.append(
+            {
+                "title": get_value(graph, honor_uri, MY0.honorTitle),
+                "issuer": get_value(graph, honor_uri, MY0.honorIssuer),
+                "date": get_value(graph, honor_uri, MY0.honorIssuedDate),
+            }
+        )
+
+    publications = []
+    for publication_uri in graph.objects(cv_uri, MY0.hasPublication):
+        publications.append(
+            {
+                "title": get_value(
+                    graph,
+                    publication_uri,
+                    MY0.publicationTitle,
+                ),
+                "publisher": get_value(
+                    graph,
+                    publication_uri,
+                    MY0.publicationPublisher,
+                ),
+                "date": get_value(
+                    graph,
+                    publication_uri,
+                    MY0.publicationDate,
+                ),
+                "description": get_value(
+                    graph,
+                    publication_uri,
+                    MY0.publicationDescription,
+                ),
+                # "vector_id": get_vector_id(graph, publication_uri),
+            }
+        )
+
+    references = []
+    for reference_uri in graph.objects(cv_uri, MY0.hasReference):
+        reference_person_uri = graph.value(reference_uri, MY0.referenceBy)
+        references.append(
+            {
+                "name": get_value(
+                    graph,
+                    reference_person_uri,
+                    MY0.firstName,
                 )
-
-        # Languages
-        if "langName" in row:
-            lang_name = row["langName"]["value"]
-            profile["languages"][lang_name] = {
-                "name": lang_name,
-                "proficiency": row.get("langProf", {}).get("value", ""),
+                if reference_person_uri
+                else "",
+                "relation": get_value(
+                    graph,
+                    reference_uri,
+                    MY0.refRelationDescription,
+                ),
             }
+        )
 
-        # Target Data
-        if "targetTitle" in row and profile["target"] is None:
-            profile["target"] = {
-                "job_title": row["targetTitle"]["value"],
-                "relocate": row["relocate"]["value"].lower() == "true" if "relocate" in row else False,
-                "travel": row["travel"]["value"].lower() == "true" if "travel" in row else False,
+    other_info = []
+    for info_uri in graph.objects(cv_uri, MY0.hasOtherInfo):
+        other_info.append(
+            {
+                "type": get_label(
+                    graph,
+                    graph.value(info_uri, MY0.otherInfoType),
+                    "Misc",
+                ),
+                "description": get_value(
+                    graph,
+                    info_uri,
+                    MY0.otherInfoDescription,
+                ),
             }
+        )
 
-        # Address Data
-        if "city" in row:
-            profile["address"] = {
-                "city": row["city"]["value"],
-                "country": row["country"]["value"],
-            }
-
-        # Websites
-        if "url" in row:
-            site_key = row["url"]["value"]
-            profile["websites"][site_key] = {
-                "url": row["url"]["value"],
-                "website_type": row.get("type", {}).get("value", "Website"),
-            }
-
-        # Honors
-        if "hTitle" in row:
-            honor_entry = {
-                "title": row["hTitle"]["value"],
-                "issuer": row.get("hIssuer", {}).get("value", ""),
-                "date": row.get("hDate", {}).get("value", ""),
-            }
-            if honor_entry not in profile["honors"]:
-                profile["honors"].append(honor_entry)
-
-        # Publications
-        if "pTitle" in row:
-            pub_entry = {
-                "title": row["pTitle"]["value"],
-                "date": row.get("pDate", {}).get("value", ""),
-                "description": row.get("pDesc", {}).get("value", "")
-            }
-            if pub_entry not in profile["publications"]:
-                profile["publications"].append(pub_entry)
-
-        # References
-        if "refName" in row:
-            ref_entry = {
-                "name": row["refName"]["value"],
-                "relation": row.get("refRel", {}).get("value", ""),
-            }
-            if ref_entry not in profile["references"]:
-                profile["references"].append(ref_entry)
-
-    # Convert sets to lists globally
-    for skill in profile["skills"].values():
-        skill["parents"] = list(skill["parents"])
-
-    # Convert sets to lists for job skills
-    for job in profile["jobs"].values():
-        for skill in job["raw_skills"].values():
-            skill["parents"] = list(skill["parents"])
-        job["raw_skills"] = list(job["raw_skills"].values())
+    address_uri = graph.value(person_uri, MY0.address)
+    skills = get_skills(graph, cv_uri)
 
     return {
-        "name": candidate_name,
-        "gender": profile["gender"],
-        "nationality": profile["nationality"],
-        "date_of_birth": profile["date_of_birth"],
-        "drivers_licence": profile["drivers_licence"],
-        "short_description": profile["short_description"],
-        "long_description": profile["long_description"],
-        "email": profile["email"],
-        "phone_mobile": profile["phone_mobile"],
-        "phone_home": profile["phone_home"],
-        "phone_work": profile["phone_work"],
-        "jobs": list(profile["jobs"].values()),
-        "education": list(profile["education"].values()),
-        "courses": profile["courses"],
-        "patents": profile["patents"],
-        "projects": profile["projects"],
-        "skills": list(profile["skills"].values()),
-        "languages": list(profile["languages"].values()),
-        "target": profile["target"],
-        "address": profile["address"],
-        "websites": list(profile["websites"].values()),
-        "instant_messaging": profile["instant_messaging"],
-        "honors": profile["honors"],
-        "publications": profile["publications"],
-        "references": profile["references"],
-        "other_info": profile["other_info"],
+        "name": get_value(graph, person_uri, MY0.firstName, candidate_name),
+        "gender": get_label(graph, gender_uri, ""),
+        "nationality": nationality,
+        "date_of_birth": get_value(graph, person_uri, MY0.dateOfBirth),
+        "drivers_licence": get_value(graph, person_uri, MY0.driversLicence),
+        "short_description": get_value(
+            graph,
+            person_uri,
+            MY0.personShortDescription,
+        ),
+        "long_description": get_value(
+            graph,
+            person_uri,
+            MY0.personLongDescription,
+        ),
+        "email": get_value(graph, person_uri, MY0.email),
+        "phone_mobile": get_value(graph, person_uri, MY0.phoneNumberMobile),
+        "phone_home": get_value(graph, person_uri, MY0.phoneNumberHome),
+        "phone_work": get_value(graph, person_uri, MY0.phoneNumberWork),
+        "jobs": jobs,
+        "education": education,
+        "courses": courses,
+        "patents": patents,
+        "projects": projects,
+        "skills": skills,
+        "languages": languages,
+        "target": target,
+        "address": get_address(graph, address_uri),
+        "websites": websites,
+        "instant_messaging": instant_messaging,
+        "honors": honors,
+        "publications": publications,
+        "references": references,
+        "other_info": other_info,
     }
 
 
 def get_all_candidate_names():
-    sparql = SPARQLWrapper(GRAPHDB_URL)
-    
     query = """
     PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
-    SELECT ?firstName ?lastName
+    SELECT DISTINCT ?firstName ?lastName
     WHERE {
-        ?person a my0:Person .
-        ?person my0:firstName ?firstName .
-        OPTIONAL { ?person my0:lastName ?lastName . }
+        GRAPH ?graph {
+            ?cv a my0:CV ;
+                my0:aboutPerson ?person .
+            ?person my0:firstName ?firstName .
+            OPTIONAL { ?person my0:lastName ?lastName . }
+        }
     }
+    ORDER BY LCASE(STR(?firstName))
     """
-    
-    sparql.setQuery(query)
-    sparql.setMethod(POST)
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    
+
     names = []
-    for row in results["results"]["bindings"]:
-        first = row["firstName"]["value"]
-        last = row.get("lastName", {}).get("value", "")
-        names.append(f"{first} {last}".strip())
-        
+    for row in run_select(query):
+        first_name = row["firstName"]["value"]
+        last_name = row.get("lastName", {}).get("value", "")
+        name = f"{first_name} {last_name}".strip()
+        if name not in names:
+            names.append(name)
     return names
+
 
 if __name__ == "__main__":
     data = get_candidate_profile("Kenneth Plum Toft")

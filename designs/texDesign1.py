@@ -100,6 +100,27 @@ publicationTitle = {
     "it": "Pubblicazioni",
 }
 
+def clean_address_value(value):
+    """Returns an empty string for missing or placeholder address values."""
+    if value is None:
+        return ""
+
+    text = str(value).strip()
+    placeholder_values = {
+        "unknown",
+        "not specified",
+        "not provided",
+        "not available",
+        "unavailable",
+        "n/a",
+        "na",
+        "none",
+        "null",
+        "-",
+    }
+    return "" if text.lower() in placeholder_values else text
+
+
 def format_date(date_str: str, as_year_only=False):
     if not date_str or str(date_str).strip().upper() == "N/A" or str(date_str).strip().lower() == "none":
         return ""
@@ -119,8 +140,9 @@ def generateMainDesign1(profile, language="en"):
         last_name = " ".join(name.split(" ")[1:])
 
         addr = profile.get("address") or {}
-        city = addr.get("city", "")
-        country = addr.get("country", "")
+        city = clean_address_value(addr.get("city"))
+        country = clean_address_value(addr.get("country"))
+        location = ", ".join(filter(None, [city, country]))
         
         contact = profile.get("contact") or {}
         phone = contact.get("phone", "")
@@ -129,7 +151,7 @@ def generateMainDesign1(profile, language="en"):
         main += f"""
       \\begin{{tabular*}}{{7in}}{{l@{{\\extracolsep{{\\fill}}}}r}}
       \\textbf{{\\Large {first_name} {last_name}}} & {phone} \\\\
-      {city}, {country} & {email} \\\\"""
+      {location} & {email} \\\\"""
 
         for website in profile.get("websites", []):
             w_type = website.get("website_type", "").lower()
@@ -157,8 +179,8 @@ def generateMainDesign1(profile, language="en"):
             end = format_date(job.get("end"))
             date_str = " - ".join(filter(None, [start, end]))
             job_addr = job.get("address") or {}
-            job_city = job_addr.get("city", "")
-            job_country = job_addr.get("country", "")
+            job_city = clean_address_value(job_addr.get("city"))
+            job_country = clean_address_value(job_addr.get("country"))
             
             if job_city and job_country:
                 city_country = f"{job_city}, {job_country}"
@@ -203,7 +225,21 @@ def generateMainDesign1(profile, language="en"):
             end = format_date(edu.get("end_date"), True)
             date_str = " - ".join(filter(None, [start, end]))
 
-            main += f"""\n\t\t    \\item \\ressubheading{{{edu.get("institution")}}}{{{""}}}{{{edu.get("degree")}}}{{{date_str}}}"""
+            degree = edu.get("degree", "") or ""
+            field_of_study = edu.get("field_of_study", "") or ""
+            degree_text = degree
+
+            if field_of_study and field_of_study.lower() not in degree.lower():
+                degree_text = " - ".join(filter(None, [degree, field_of_study]))
+
+            main += f"""\n\t\t    \\item \\ressubheading{{{edu.get("institution")}}}{{}}{{{degree_text}}}{{{date_str}}}"""
+
+            description = edu.get("description", "")
+            if description:
+                main += "\n        \\begin{itemize}"
+                main += f"\n            \\resitem{{{description}}}"
+                main += "\n        \\end{itemize}"
+
         main += "\n      \\end{itemize}"
 
     # Courses & Certifications

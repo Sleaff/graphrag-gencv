@@ -66,12 +66,14 @@ def get_cv_prompt(job_description: str, raw_profile: dict | str, max_pages: int 
     1. Filter out completely irrelevant data, but ensure major sections (Projects, Courses, Patents, etc.) are included if they exist in the raw data.
     2. Rewrite 'description' fields in 'jobs' and 'projects' into concise, impactful arrays of bullet points ('highlights').
     3. Synthesize 'short_description' and 'long_description' into a single, polished 'summary' paragraph.
+    4. For missing values, use empty values. Never use placeholder text such as "Unknown", "Not specified", "N/A", or "Not provided".
+    5. Do not make up any information. Only use the data provided in the raw profile. If a field is missing, leave it empty.
     
     Return a JSON object strictly following this structure:
     {{
         "name": "Candidate Name",
         "contact": {{"phone": "...", "email": "..."}},
-        "address": {{"city": "City", "country": "Country"}},
+        "address": {{"city": "...", "country": "..."}},
         "websites": [{{"url": "...", "website_type": "..."}}],
         "summary": "Polished professional summary...",
         "jobs": [{{
@@ -79,7 +81,7 @@ def get_cv_prompt(job_description: str, raw_profile: dict | str, max_pages: int 
             "title": "...", 
             "start": "...", 
             "end": "...", 
-            "address": {{"city": "City", "country": "Country"}},
+            "address": {{"city": "...", "country": "..."}},
             "highlights": ["...", "..."]
         }}],
         "projects": [{{
@@ -88,7 +90,7 @@ def get_cv_prompt(job_description: str, raw_profile: dict | str, max_pages: int 
         "education": [{{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "description": "..."}}],
         "courses": [{{"title": "...", "organized_by": "...", "date": "...", "has_certification": true}}],
         "patents": [{{"title": "...", "number": "...", "date": "...", "status": "..."}}],
-        "skills": ["Skill 1", "Skill 2"], 
+        "skills": ["...", "..."], 
         "languages": [{{"name": "...", "proficiency": "..."}}],
         "publications": [{{"title": "...", "date": "..."}}],
         "honors": [{{"title": "...", "issuer": "...", "date": "..."}}]

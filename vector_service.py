@@ -7,6 +7,11 @@ client = chromadb.PersistentClient(path="./vector_data")
 collection = client.get_or_create_collection(name="candidate_narratives")
 
 
+def delete_candidate_embeddings(candidate_slug: str):
+    """Removes stale embeddings before a candidate profile is replaced."""
+    collection.delete(where={"candidate": candidate_slug})
+
+
 def generate_and_store_embedding(candidate_slug: str, job_idx: str, description: str):
     """Generates an embedding and saves it locally."""
     if not description:

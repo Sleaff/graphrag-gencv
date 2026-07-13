@@ -4,14 +4,10 @@ from typing import List, Optional
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from esco_service import (
-    batch_map_skills_to_esco,
-    enrich_skills_with_hierarchy,
-    get_esco_skill_uri_from_db,
-)
+from esco_service import batch_map_skills_to_esco, enrich_skills_with_hierarchy
 from generate_rdf import create_rdf_graph, upload_to_graphdb
 from llm_service import ChatMessage, call_llm
-from vector_service import generate_and_store_embedding
+from vector_service import delete_candidate_embeddings, generate_and_store_embedding
 
 
 class Address(BaseModel):
@@ -112,6 +108,7 @@ class Publication(BaseModel):
     title: str
     publisher: Optional[str] = None
     date: Optional[str] = None
+    description: Optional[str] = None
 
 
 class OtherInfo(BaseModel):
@@ -152,12 +149,90 @@ class CandidateProfile(BaseModel):
         populate_by_name = True
 
 
+def prepare_candidate_data(candidate_data: CandidateProfile) -> dict:
+    candidate_slug = candidate_data.name.replace(" ", "_").lower()
+    data_dict = candidate_data.model_dump()
+
+    all_raw_skills = set(data_dict.get("technical_skills", []))
+    for job in data_dict.get("jobs", []):
+        all_raw_skills.update(job.get("raw_skills", []))
+
+    all_raw_skills_list = list(all_raw_skills)
+    if all_raw_skills_list:
+        logger.info(f"Batch mapping {len(all_raw_skills_list)} unique skills...")
+        mapped_skills = batch_map_skills_to_esco(all_raw_skills_list)
+        logger.info("Enriching skills with ESCO hierarchy...")
+        enriched_skills = enrich_skills_with_hierarchy(mapped_skills)
+    else:
+        enriched_skills = {}
+
+    data_dict["technical_skills"] = [
+        {"name": skill, "esco_data": enriched_skills.get(skill)}
+        for skill in data_dict.get("technical_skills", [])
+    ]
+
+    for job in data_dict.get("jobs", []):
+        job["esco_skills"] = [
+            {"name": skill, "esco_data": enriched_skills.get(skill)}
+            for skill in job.get("raw_skills", [])
+        ]
+        job.pop("raw_skills", None)
+
+    delete_candidate_embeddings(candidate_slug)
+
+    for idx, job in enumerate(data_dict["jobs"]):
+        job["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"job_{idx}",
+            job.get("description", "") or job.get("title", ""),
+        )
+
+    for idx, edu in enumerate(data_dict["education"]):
+        edu["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"edu_{idx}",
+            edu.get("description", "") or edu.get("degree", ""),
+        )
+
+    for idx, proj in enumerate(data_dict["projects"]):
+        proj["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"proj_{idx}",
+            proj.get("description", "") or proj.get("name", ""),
+        )
+
+    for idx, pub in enumerate(data_dict["publications"]):
+        pub["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"pub_{idx}",
+            pub.get("description", "") or pub.get("title", ""),
+        )
+
+    for idx, crs in enumerate(data_dict["courses"]):
+        crs["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"course_{idx}",
+            crs.get("description", "") or crs.get("title", ""),
+        )
+
+    for idx, pat in enumerate(data_dict["patents"]):
+        pat["vector_id"] = generate_and_store_embedding(
+            candidate_slug,
+            f"patent_{idx}",
+            pat.get("description", "") or pat.get("title", ""),
+        )
+
+    return data_dict
+
+
 async def map_cv_to_rdf(cv_markdown: str) -> str:
     messages = [
         ChatMessage(
             role="system",
             content="""You are an expert HR parser. Extract the full profile data perfectly aligning with the schema.
 IMPORTANT: For the job 'description', ONLY extract the description of the main activities and responsibilities. Do NOT include descriptions of the company itself.
+IMPORTANT: Only include a reference when an actual person's name is explicitly provided. Statements such as 'References are available upon request' are not references and must return an empty 'references' array.
+IMPORTANT: Extract named or substantial academic work, including Master's theses, Bachelor's projects, capstone projects, and academic research projects, into the "projects" array, even when it appears inside an Education section.
 Return ONLY a valid JSON object matching this schema exactly:
 {
     "name": "full name", "gender": "...", "nationality": "...", "date_of_birth": "...", "drivers_licence": "...", "short_description": "...", "long_description": "...",
@@ -203,78 +278,7 @@ Return ONLY a valid JSON object matching this schema exactly:
     except Exception as e:
         raise ValueError(f"Failed to parse LLM response: {e}") from e
 
-    candidate_slug = candidate_data.name.replace(" ", "_").lower()
-    data_dict = candidate_data.model_dump()
-
-    # Aggregate Skills, gather every unique skill from both the 'technical_skills' array and 'jobs' arrays
-    all_raw_skills = set(data_dict.get("technical_skills", []))
-    for job in data_dict.get("jobs", []):
-        all_raw_skills.update(job.get("raw_skills", []))
-
-    all_raw_skills_list = list(all_raw_skills)
-
-    # Transform & Enrich
-    if all_raw_skills_list:
-        logger.info(f"Batch mapping {len(all_raw_skills_list)} unique skills...")
-        mapped_skills = batch_map_skills_to_esco(all_raw_skills_list)
-
-        logger.info("Enriching skills with ESCO hierarchy...")
-        enriched_skills = enrich_skills_with_hierarchy(mapped_skills)
-    else:
-        enriched_skills = {}
-
-    # Update technical skills with the rich data
-    data_dict["technical_skills"] = [
-        {"name": skill, "esco_data": enriched_skills.get(skill)}
-        for skill in data_dict.get("technical_skills", [])
-    ]
-
-    # Update job skills with the rich data
-    for job in data_dict.get("jobs", []):
-        job["esco_skills"] = [
-            {"name": skill, "esco_data": enriched_skills.get(skill)}
-            for skill in job.get("raw_skills", [])
-        ]
-        # Clean up the raw_skills key
-        job.pop("raw_skills", None)
-
-    # Generate Embeddings for textual components - Experiement
-    for idx, job in enumerate(data_dict["jobs"]):
-        job["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"job_{idx}", job.get("description", "")
-        )
-
-    for idx, edu in enumerate(data_dict["education"]):
-        edu["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"edu_{idx}", edu.get("description", "")
-        )
-
-    for idx, proj in enumerate(data_dict["projects"]):
-        proj["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"proj_{idx}", proj.get("description", "")
-        )
-
-    for idx, pub in enumerate(data_dict["publications"]):
-        pub["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"pub_{idx}",
-            pub.get("description", "") or pub.get("title", ""),
-        )
-
-    for idx, crs in enumerate(data_dict["courses"]):
-        crs["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"course_{idx}",
-            crs.get("description", "") or crs.get("title", ""),
-        )
-
-    for idx, pat in enumerate(data_dict["patents"]):
-        pat["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"patent_{idx}",
-            pat.get("description", "") or pat.get("title", ""),
-        )
-
+    data_dict = prepare_candidate_data(candidate_data)
     graph = create_rdf_graph(data_dict)
     upload_to_graphdb(graph)
     return graph.serialize(format="turtle")
@@ -282,51 +286,7 @@ Return ONLY a valid JSON object matching this schema exactly:
 
 async def generate_rdf_and_vectors(candidate_data: CandidateProfile) -> str:
     """Takes a strictly structured Pydantic model and inserts it into ChromaDB and GraphDB."""
-    candidate_slug = candidate_data.name.replace(" ", "_").lower()
-    data_dict = candidate_data.model_dump()
-
-    for idx, job in enumerate(data_dict["jobs"]):
-        job["esco_skill_uris"] = [
-            get_esco_skill_uri_from_db(s)
-            for s in job.get("raw_skills", [])
-            if get_esco_skill_uri_from_db(s)
-        ]
-        job["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"job_{idx}", job.get("description", "")
-        )
-
-    for idx, edu in enumerate(data_dict["education"]):
-        edu["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"edu_{idx}", edu.get("description", "")
-        )
-
-    for idx, proj in enumerate(data_dict["projects"]):
-        proj["vector_id"] = generate_and_store_embedding(
-            candidate_slug, f"proj_{idx}", proj.get("description", "")
-        )
-
-    for idx, pub in enumerate(data_dict["publications"]):
-        pub["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"pub_{idx}",
-            pub.get("description", "") or pub.get("title", ""),
-        )
-
-    for idx, crs in enumerate(data_dict["courses"]):
-        crs["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"course_{idx}",
-            crs.get("description", "") or crs.get("title", ""),
-        )
-
-    for idx, pat in enumerate(data_dict["patents"]):
-        pat["vector_id"] = generate_and_store_embedding(
-            candidate_slug,
-            f"patent_{idx}",
-            pat.get("description", "") or pat.get("title", ""),
-        )
-
+    data_dict = prepare_candidate_data(candidate_data)
     graph = create_rdf_graph(data_dict)
     upload_to_graphdb(graph)
-
     return graph.serialize(format="turtle")
