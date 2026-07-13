@@ -53,7 +53,7 @@ async def send_message_marker(pdf_file: UploadFile = File(...)):
 
             os.unlink(temp_pdf_path)
 
-            logger.debug(f"extracted cv: {text}")  # Log first 100 characters for brevity
+            logger.debug(f"extracted cv: {text}")
             return {"text": text}
 
     except HTTPException:
@@ -85,7 +85,7 @@ async def extract_text(pdf_file: UploadFile = File(...)):
             f"PDF converted to sentences successfully: {len(text)} sentences extracted"
         )
 
-        return {"text": text}
+        return text
 
         # os.unlink(temp_pdf_path)
 

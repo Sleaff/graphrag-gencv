@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "chromadb>=1.5.9",
-    "docling>=2.87.0",
+    "docling==2.73.0",
+    "docling-core==2.64.0",
+    "docling-ibm-models==3.11.0",
+    "docling-parse==4.7.3",
     "dotenv>=0.9.9",
     "fastapi>=0.135.3",
     "loguru>=0.7.3",

@@ -274,6 +274,22 @@ Return ONLY a valid JSON object matching this schema exactly:
             )
 
         parsed_data = json.loads(candidate_data_json)
+
+        # Remove any job/website entries that are not dictionaries or do not have a valid company name/url
+        parsed_data["jobs"] = [
+            job
+            for job in parsed_data.get("jobs", [])
+            if isinstance(job, dict)
+            and isinstance(job.get("company"), str)
+            and job["company"].strip()
+        ]
+        parsed_data["websites"] = [
+            website
+            for website in parsed_data.get("websites", [])
+            if isinstance(website, dict)
+            and isinstance(website.get("url"), str)
+            and website["url"].strip()
+        ]
         candidate_data = CandidateProfile(**parsed_data)
     except Exception as e:
         raise ValueError(f"Failed to parse LLM response: {e}") from e

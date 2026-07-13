@@ -426,7 +426,7 @@ def get_candidate_profile(candidate_name: str):
                 "name": get_value(
                     graph,
                     reference_person_uri,
-                    MY0.firstName,
+                    MY0.fullName,
                 )
                 if reference_person_uri
                 else "",
@@ -459,7 +459,7 @@ def get_candidate_profile(candidate_name: str):
     skills = get_skills(graph, cv_uri)
 
     return {
-        "name": get_value(graph, person_uri, MY0.firstName, candidate_name),
+        "name": get_value(graph, person_uri, MY0.fullName, candidate_name),
         "gender": get_label(graph, gender_uri, ""),
         "nationality": nationality,
         "date_of_birth": get_value(graph, person_uri, MY0.dateOfBirth),
@@ -498,24 +498,19 @@ def get_candidate_profile(candidate_name: str):
 
 def get_all_candidate_names():
     query = """
-    PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
-    SELECT DISTINCT ?firstName ?lastName
-    WHERE {
-        GRAPH ?graph {
-            ?cv a my0:CV ;
-                my0:aboutPerson ?person .
-            ?person my0:firstName ?firstName .
-            OPTIONAL { ?person my0:lastName ?lastName . }
+        PREFIX my0: <http://example.com/resume2rdf_ontology.rdf#>
+        SELECT DISTINCT ?fullName
+        WHERE {
+            ?person a my0:Person ;
+                    my0:fullName ?fullName .
         }
-    }
-    ORDER BY LCASE(STR(?firstName))
-    """
+        ORDER BY LCASE(STR(?fullName))
+        """
 
     names = []
     for row in run_select(query):
-        first_name = row["firstName"]["value"]
-        last_name = row.get("lastName", {}).get("value", "")
-        name = f"{first_name} {last_name}".strip()
+        name = row["fullName"]["value"]
+
         if name not in names:
             names.append(name)
     return names

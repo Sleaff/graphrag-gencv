@@ -155,7 +155,7 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     graph.add((cv_uri, RDF.type, MY0.CV))
     graph.add((cv_uri, MY0.aboutPerson, person_uri))
     graph.add((person_uri, RDF.type, MY0.Person))
-    add_literal(graph, person_uri, MY0.firstName, candidate_name)
+    add_literal(graph, person_uri, MY0.fullName, candidate_name)
 
     gender_uri = create_controlled_value(
         graph,
@@ -444,7 +444,7 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         graph.add((reference_uri, RDF.type, MY0.Reference))
         graph.add((reference_uri, MY0.referenceBy, reference_person_uri))
         graph.add((reference_person_uri, RDF.type, MY0.Person))
-        add_literal(graph, reference_person_uri, MY0.firstName, reference.get("name"))
+        add_literal(graph, reference_person_uri, MY0.fullName, reference.get("name"))
         add_literal(
             graph,
             reference_uri,

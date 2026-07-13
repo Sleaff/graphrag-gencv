@@ -60,8 +60,7 @@ async def cv_to_rdf(file: UploadFile) -> dict:
     """Endpoint to convert a Markdown CV into RDF Turtle format using the LLM."""
     try:
         logger.info(f"Extracting text from file: {file.filename}")
-        extraction_result = await extract_text(file)
-        cv_markdown = extraction_result["text"]
+        cv_markdown = await extract_text(file)
         logger.debug(f"Extracted CV text: {cv_markdown}")
         logger.info("Using LLM to map CV to RDF...")
         result = await map_cv_to_rdf(cv_markdown)
