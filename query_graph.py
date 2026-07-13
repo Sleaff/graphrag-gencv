@@ -40,7 +40,7 @@ def find_candidate_graph(candidate_name: str) -> tuple[URIRef, URIRef, URIRef]:
         GRAPH ?graph {{
             ?cv a my0:CV ;
                 my0:aboutPerson ?person .
-            ?person my0:firstName {sparql_string(candidate_name)} .
+            ?person my0:fullName {sparql_string(candidate_name)} .
         }}
     }}
     LIMIT 1
