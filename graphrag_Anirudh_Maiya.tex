@@ -1,0 +1,148 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Anirudh Maiya} & (720) 314-2147 \\
+      Boulder, USA & anirudhmaiya99@gmail.com \\
+      \faLinkedin { }  \href{https://linkedin.com/in/anirudh-maiya-691479155}{https://linkedin.com/in/anirudh-maiya-691479155} & \\
+      \faGithub { }  \href{https://github.com/AnirudhMaiya}{https://github.com/AnirudhMaiya} & \\
+      \faGlobe { }  \href{https://anirudhmaiya.github.io}{https://anirudhmaiya.github.io} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Innovative Software and AI Engineer with a strong foundation in Computer Science and a proven track record of taking complex technical solutions from ideation to production. Expert in developing scalable cloud-native architectures, optimizing high-performance software, and implementing cutting-edge machine learning frameworks. Demonstrated success in enhancing system robustness, automating complex workflows, and driving significant operational efficiencies within enterprise environments. Passionate about leveraging frontier AI technologies and modern software engineering practices to solve high-impact, real-world problems.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Commvault}{Boulder, USA}{Software Engineer}{January 2022 - August 2023}
+        \begin{itemize}
+            \resitem{Elevated remote troubleshooting service success rate from 85\% to 98\% through enhanced software robustness and rigorous error handling for PsExec operations.}
+            \resitem{Spearheaded the migration and refactoring of a 35,000-line remote troubleshooting service, upgrading the codebase from Python 2.7 to Python 3.9.}
+            \resitem{Implemented advanced object-oriented programming principles, including dependency management, log scrubbing, and generic retry APIs to ensure production-grade adaptability.}
+            \resitem{Served as Subject Matter Expert (SME) for ServiceNow integration, revamping the Commvault Plugin to ensure full compliance with ServiceNow Store regulations.}
+            \resitem{Led critical infrastructure migrations, including a complex Tomcat migration and upgrading jQuery libraries for cloud services Java projects.}
+            \resitem{Managed the company's translation editor service, optimizing user experience and productivity for global translation teams.}
+        \end{itemize}
+        \item \ressubheading{Commvault}{Boulder, USA}{Associate Software Engineer}{July 2021 - December 2021}
+        \begin{itemize}
+            \resitem{Architected and developed a 'Decompress-as-a-service' solution within a cloud ecosystem using a leader-worker architecture.}
+            \resitem{Enabled 1,000+ engineers to process over 30TB of daily customer logs by designing efficient schemas and aggregation functionalities.}
+            \resitem{Reduced annual operational overhead by approximately 300 hours through the implementation of on-the-fly maintenance and feature release upgrades.}
+            \resitem{Managed high-scale workflows and reports for the Commvault Cloud platform, supporting a customer base of over 20,000.}
+            \resitem{Mitigated security vulnerabilities by decoupling customer-facing reports from licensing code dependencies.}
+        \end{itemize}
+        \item \ressubheading{Commvault}{Boulder, USA}{Development Intern}{January 2021 - June 2021}
+        \begin{itemize}
+            \resitem{Optimized cloud services build pipelines by migrating from Apache Ant to Gradle, reducing build times from 3 minutes to 30 seconds.}
+            \resitem{Facilitated rapid response to the Log4j vulnerability by streamlining dependency management processes.}
+            \resitem{Designed and automated robust test cases for the Commvault Cloud Disaster Recovery solution to ensure high availability.}
+        \end{itemize}
+        \item \ressubheading{Indian Space Research Organization}{Boulder, USA}{Project Intern}{October 2019 - April 2020}
+        \begin{itemize}
+            \resitem{Developed a novel framework for estimating coconut farm areas using multi-spectral data, achieving 89\% accuracy.}
+            \resitem{Introduced a framework facilitating contradictory feature learning to improve model precision.}
+            \resitem{Presented research findings at the IEEE IGARSS - 2021 conference.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Tom Optimizer}{}{Researcher/Developer}{ - }
+        \begin{itemize}
+            \resitem{Developed a novel variant of the Adam optimizer that accounts for gradient trends.}
+            \resitem{Achieved a 4.6\% average improvement in accuracy and convergence speed compared to traditional optimizers.}
+        \end{itemize}
+        \item \ressubheading{Cloud Image Prior}{}{Researcher/Developer}{ - }
+        \begin{itemize}
+            \resitem{Devised a training-data-free framework to remove cloud cover from Sentinel-2 remote-sensing imagery.}
+            \resitem{Increased average peak signal-to-noise ratio (PSNR) by 64\%.}
+        \end{itemize}
+        \item \ressubheading{RideShare Application}{}{Backend Developer}{ - }
+        \begin{itemize}
+            \resitem{Built a scalable backend for a ride-sharing platform enabling user-driven ride lifecycle management.}
+            \resitem{Utilized RabbitMQ for message queuing and orchestrated worker containers.}
+            \resitem{Implemented eventual consistency for database updates and ensured system fault tolerance using Apache ZooKeeper.}
+        \end{itemize}
+        \item \ressubheading{Messup}{}{Researcher/Developer}{ - }
+        \begin{itemize}
+            \resitem{Developed a novel regularization technique utilizing exponential smoothing for sample encounters.}
+            \resitem{Reduced generalization error by 1.6\% on the CIFAR-10 dataset using ResNet.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{University of Colorado Boulder}{Boulder, USA}{Master of Science in Computer Science}{Ongoing - May 2025}
+		    \item \ressubheading{PES University}{Boulder, USA}{Bachelor of Science in Computer Science}{ - May 2021}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] Python, Java, JavaScript, SQL, PHP, Node.js, ReactJS, CSS, HTML, PyTorch, TensorFlow, Keras, scikit-learn, Numpy, Matplotlib, Plotly, Hugging Face, NLTK, SpaCy, Apache Spark, RabbitMQ, Apache ZooKeeper, Docker, Kubernetes, Azure, Google Cloud Platform, Linux, PostgreSQL, MongoDB, Microsoft SQL Server, Gradle, Apache Ant, Tomcat, jQuery, PsExec, ServiceNow, REST API, JSON, XML, Flask, Git, Object-Oriented Programming, Algorithms, Operating Systems, Test Automation
+      \end{itemize}
+    \end{document}

@@ -75,7 +75,12 @@ def get_cv_prompt(job_description: str, raw_profile: dict | str, max_pages: int 
         "websites": [{{"url": "...", "website_type": "..."}}],
         "summary": "Polished professional summary...",
         "jobs": [{{
-            "company": "...", "title": "...", "start": "...", "end": "...", "highlights": ["...", "..."]
+            "company": "...", 
+            "title": "...", 
+            "start": "...", 
+            "end": "...", 
+            "address": {{"city": "City", "country": "Country"}},
+            "highlights": ["...", "..."]
         }}],
         "projects": [{{
             "name": "...", "role": "...", "start": "...", "end": "...", "highlights": ["...", "..."]

@@ -1,0 +1,119 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Miguel Osuna} & +52 664 385 1469 \\
+      Tijuana, Mexico & contact@miguel-osuna.com \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Senior Software Engineer with over 5 years of experience specializing in the development of scalable applications, system performance optimization, and workflow automation. Expert in full-stack development and cloud technologies, with a proven track record of implementing CI/CD pipelines, migrating complex architectures, and integrating AI-driven enhancements to boost business metrics. A highly collaborative professional dedicated to delivering high-quality, reliable software solutions in fast-paced, multinational environments, with deep expertise in modern DevOps practices and rapid prototyping.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{The Home Depot}{Tijuana, Mexico}{Senior Software Engineer}{Jul 2024 - Now}
+        \begin{itemize}
+            \resitem{Driving innovative solutions on the MyView team to enhance operational efficiency for thousands of store associates.}
+            \resitem{Boosted quote conversion by ~25\% through the integration of AI-driven enhancements.}
+            \resitem{Developed a high-impact, data-rich dashboard utilized by over 1,000 store associates.}
+            \resitem{Upgraded 80+ test suites from Enzyme to React Testing Library, increasing code coverage by 20\% and reducing production bugs by approximately 15\%.}
+        \end{itemize}
+        \item \ressubheading{Expedia Group}{Tijuana, Mexico}{Senior Software Development Engineer}{Oct 2022 - May 2024}
+        \begin{itemize}
+            \resitem{Played a pivotal role on the Bernie platform team, streamlining developer workflows and improving performance across multiple Expedia brands.}
+            \resitem{Reduced CLI command execution time by ~50\% and decreased build times by ~20\%.}
+            \resitem{Migrated CI/CD pipelines to GitHub Actions, significantly streamlining releases and reducing deployment overhead.}
+            \resitem{Automated package updates using Renovate, effectively eliminating manual dependency management tasks.}
+            \resitem{Implemented snapshot testing within a monorepo environment, saving approximately 4 hours of manual effort weekly.}
+        \end{itemize}
+        \item \ressubheading{Expedia Group}{Tijuana, Mexico}{Software Development Engineer}{Mar 2021 - Oct 2022}
+        \begin{itemize}
+            \resitem{Contributed to Hotwire's Platform and the Cruise Customer Experience team, focusing on data-driven enhancements and the creation of reusable UI components.}
+            \resitem{Optimized GraphQL queries, increasing data retrieval speed by ~20\% across critical Cruise domain pages.}
+            \resitem{Designed and implemented highly reusable UI components for Lodging, Flights, Packages, and Cruises.}
+            \resitem{Reduced shared package bundle sizes to significantly enhance application performance.}
+            \resitem{Accelerated partner-facing app migration, halving the time required for developer onboarding.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Universidad Autónoma de Baja California}{Tijuana, Mexico}{Electronics Engineering}{Aug 2015 - Jun 2020}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] Python, TypeScript, JavaScript, Node.js, AWS, Java, GCP, CSS, Kotlin, GraphQL, Docker, GitHub Actions, React.js, Next.js, CI/CD, AI-driven Enhancements, Monorepo Management, Unit \& Snapshot Testing, Performance Optimization, Full-stack Development
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{English}: Native speaker
+		    \item[] \textbf{Spanish}: Native speaker
+      \end{itemize}
+    \end{document}

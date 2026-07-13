@@ -1,0 +1,159 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Yi Zhen} & +86 177 1768 7328 \\
+      Shanghai, China & iamzhenyi@gmail.com \\
+      \faGithub { }  \href{https://github.com/i-zhen}{https://github.com/i-zhen} & \\
+      \faLinkedin { }  \href{https://linkedin.com/in/izhenyi}{https://linkedin.com/in/izhenyi} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Highly accomplished Senior Software Engineer and Tech Architect with extensive expertise in Large Language Model (LLM) optimization, compiler design, and high-performance computing. Proven track record of leading technical teams to build cutting-edge AI systems, including LLM operator libraries, smart contract compiler frameworks, and domain-specific languages. Expert in bridging the gap between theoretical AI research and production-ready infrastructure, with a strong background in low-level system optimization and formal verification. Demonstrated ability to drive innovation through university-enterprise collaborations and significant contributions to the open-source community and top-tier academic venues (ICSE, TOSEM, ISSTA).
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Ant Group}{Shanghai, China}{Senior Software Engineer (Team Lead \& Tech Architect)}{Mar. 2021 - Now}
+        \begin{itemize}
+            \resitem{Leading the development of AI systems focused on optimizing LLM performance, including operator development and training/inference optimization.}
+            \resitem{Architected and co-founded the Smart Intermediate Representation (SIR) framework, an open-source smart contract compiler designed for safety and high performance.}
+            \resitem{Managing the end-to-end lifecycle of the Godel Query Language, a DSL for data processing and querying used in CodeFuse-Query.}
+            \resitem{Spearheaded a high-impact university-enterprise cooperation project with Sun Yat-sen University (SYSU).}
+            \resitem{Published research in premier software engineering venues regarding large-scale code analysis and smart contract security.}
+        \end{itemize}
+        \item \ressubheading{Huawei Research}{Shanghai, China}{Software Engineer (Tech Lead, Development)}{Nov. 2018 - Mar. 2021}
+        \begin{itemize}
+            \resitem{Served as Technical Lead for the design and implementation of a low-code platform.}
+            \resitem{Acted as a primary developer for the Open Ark compiler, enhancing development efficiency through advanced tooling.}
+        \end{itemize}
+        \item \ressubheading{Citigroup}{Shanghai, China}{Software Engineer (Development, Continuous Integration)}{Apr. 2017 - Nov. 2018}
+        \begin{itemize}
+            \resitem{Developed and maintained critical anti-money laundering (AML) platforms.}
+            \resitem{Engineered wire transfer systems specifically tailored for block trade agents, ensuring high reliability and security.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{LLM Optimization of Training and Inference}{}{Tech Lead}{Feb. 2024}
+        \begin{itemize}
+            \resitem{Driving LLM deployment and training initiatives with a focus on model compression and performance profiling.}
+            \resitem{Developing and tuning a specialized operator library to enhance LLM execution efficiency.}
+            \resitem{Leading comprehensive evaluation and testing protocols for Large Language Models.}
+        \end{itemize}
+        \item \ressubheading{Smart Intermediate Representation (SIR)}{}{Co-founder / Smart Contract Compiler Framework}{Nov. 2022 - Jan. 2024}
+        \begin{itemize}
+            \resitem{Created a universal technical solution adaptable to various programming languages to enhance blockchain security and performance.}
+            \resitem{Developed a framework to enable multi-scenario compatibility for smart contracts.}
+        \end{itemize}
+        \item \ressubheading{Godel Query Language}{}{Project Manager}{Jul. 2021 - Oct. 2022}
+        \begin{itemize}
+            \resitem{Designed a DSL for querying and data processing powered by a Datalog engine.}
+            \resitem{Implemented strict type checking, convenient type inference, and user-friendly error messaging using Rust-like syntax.}
+        \end{itemize}
+        \item \ressubheading{ERC721G: Anti-Theft ERC721 Solution}{}{Co-founder}{Jun. 2022 - Oct. 2022}
+        \begin{itemize}
+            \resitem{Developed the world's first anti-theft NFT series solution to protect property security for ERC721 standard holders.}
+        \end{itemize}
+        \item \ressubheading{PPrinter}{}{Author}{Jun. 2016 - Aug. 2016}
+        \begin{itemize}
+            \resitem{Developed a generic derivable Haskell pretty printer library with over 3,900 downloads on Hackage.}
+            \resitem{Implemented an automatic derivation mechanism for instances of user-defined arbitrary data types.}
+        \end{itemize}
+        \item \ressubheading{Sun Yat-sen University ASC Student Supercomputer Challenge}{}{Team Member}{2014 - 2014}
+        \begin{itemize}
+            \resitem{Optimized SU 2 (Stanford University C++ code) for PDE analysis under strict power constraints.}
+            \resitem{Mastered GPGPU heterogeneous computing and multiprocessor programming to achieve peak HPC performance.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{University of Edinburgh}{Shanghai, China}{Master of Science in Artificial Intelligence}{Sep. 2015 - Nov. 2016}
+		    \item \ressubheading{Sun Yat-sen University}{Shanghai, China}{Bachelor of Engineering in Software Engineering}{Sep. 2011 - Jun. 2015}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] Triton, Tilelang, Rust, Solidity, TypeScript, Haskell, C/C++, Java, Python, Scala, Prolog, Coq, SGLang, vLLM, CUDA, MLIR/LLVM, ONNXRuntime, Hardhat, web3.js, ether.js, ASM, LLM Training \& Inference, Model Compression, Performance Profiling, Compiler Design, HPC (High Performance Computing), GPGPU, CI/CD, Smart Contract Security
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{Chinese}: Native
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Publications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Principles and Practices of Large-Scale Code Analysis at Ant Group: A Data- and Logic-Oriented Approach (ICSE 2026)}{}{}{To appear}
+		    \item \ressubheading{CCIHunter: Enhancing Smart Contract Code-Comment Inconsistencies Detection via Two-Stage Pre-training (TOSEM 2025)}{}{}{To appear}
+		    \item \ressubheading{DAppFL: Just-in-Time Fault Localization for Decentralized Applications in Web3 (ISSTA 2024)}{}{}{To appear}
+      \end{itemize}
+    \end{document}

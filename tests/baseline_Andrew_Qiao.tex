@@ -1,0 +1,139 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Andrew Qiao} & 647-621-0369 \\
+      Waterloo, Canada & andrew.qiao@uwaterloo.ca \\
+      \faGithub { }  \href{https://github.com/andrewqiao}{https://github.com/andrewqiao} & \\
+      \faLinkedin { }  \href{https://linkedin.com/in/andrewqiao}{https://linkedin.com/in/andrewqiao} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Highly accomplished Computer Science student at the University of Waterloo with extensive experience in developing production-grade AI applications and scalable software systems. Proven track record in leveraging frontier AI technologies, including Retrieval-Augmented Generation (RAG), Large Language Models (LLMs), and vector databases to solve complex enterprise problems. Demonstrated expertise in building AI copilots, generative AI applications, and high-performance distributed systems at industry leaders like Snowflake and IBM. Adept at bridging the gap between cutting-edge research and impactful engineering, with a strong foundation in software architecture, CI/CD, and cloud-native development.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Ramp}{Waterloo, Canada}{Incoming Software Engineer Intern}{Sept. 2025 - Dec. 2025}
+        \begin{itemize}
+            \resitem{Selected for upcoming software engineering internship to contribute to high-scale financial technology solutions.}
+        \end{itemize}
+        \item \ressubheading{Snowflake}{Waterloo, Canada}{Software Engineer Intern}{Apr. 2025 - Now}
+        \begin{itemize}
+            \resitem{Developing Snowflake's design system consumed by 100+ engineers using React.js, TypeScript, and StyleX.}
+            \resitem{Accelerating the development of polished, accessible, and consistent user experiences across the platform.}
+        \end{itemize}
+        \item \ressubheading{Snowflake}{Waterloo, Canada}{Software Engineer (Contract)}{Not Specified - Not Specified}
+        \begin{itemize}
+            \resitem{Built AI Copilot for Notebooks, accelerating workflows for 1,000+ data scientists across 300+ organizations.}
+            \resitem{Owned development of resource monitoring in Notebooks using Python, gRPC, Protocol Buffers, React.js, TypeScript, and Vega Lite.}
+            \resitem{Provided customers with real-time visibility into CPU, disk, and GPU usage through advanced monitoring components.}
+        \end{itemize}
+        \item \ressubheading{Snowflake}{Waterloo, Canada}{Software Engineer Intern}{Not Specified - Not Specified}
+        \begin{itemize}
+            \resitem{Designed and implemented an E2E testing framework adopted by 100+ engineers across 15+ teams using Jenkins, Docker, Groovy, Bash, and Datadog.}
+            \resitem{Architected UI component APIs consumed by developers on 5+ teams using React.js and TypeScript.}
+            \resitem{Deployed user experience enhancements across products used by 15,000+ users across 3,000+ organizations.}
+        \end{itemize}
+        \item \ressubheading{IBM}{Waterloo, Canada}{Software Developer Intern}{Not Specified - Not Specified}
+        \begin{itemize}
+            \resitem{Shipped a generative AI application for code explanation and test-case generation on 12M+ lines of code using AWS, React.js, and IBM's WatsonX AI platform.}
+            \resitem{Increased code explanation accuracy from 30\% to 90\% by implementing Retrieval-Augmented Generation (RAG) using LangChain, FAISS vector database, Python, and the Mixtral 8x7B LLM.}
+            \resitem{Engineered a rules-based anomaly detection system to verify \$10B+ in insurance claims using Python and SQL.}
+        \end{itemize}
+        \item \ressubheading{TD Bank}{Waterloo, Canada}{Software Developer Intern}{Not Specified - Not Specified}
+        \begin{itemize}
+            \resitem{Designed a distributed task queue to asynchronously execute portfolio model calculations using Celery and Python.}
+            \resitem{Saved Portfolio Managers 10+ hours per week by eliminating wait times associated with synchronous executions.}
+        \end{itemize}
+        \item \ressubheading{University of Toronto}{Waterloo, Canada}{Research Intern}{Not Specified - Not Specified}
+        \begin{itemize}
+            \resitem{Contributed to a university-partnered study with OpenAI focusing on AI alignment in the workplace.}
+            \resitem{Conducted research under the supervision of Dr. Meena Andiappan and Dr. Gillian Hadfield.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Pethsapp}{}{Lead Developer}{Jun. 2021 - Jun. 2023}
+        \begin{itemize}
+            \resitem{Led a team of 5 in developing a mobile application for a high school community, serving 1200+ students, staff, and parents.}
+            \resitem{Utilized React Native, Firebase, Google Cloud, and Sanity for full-stack development.}
+            \resitem{Achieved Top 15 ranking on the Apple App Store Education Chart.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{University of Waterloo}{Waterloo, Canada}{Bachelor of Computer Science}{2022 - 2026}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] JavaScript, TypeScript, Python, SQL, C++, C, HTML, CSS, React.js, Next.js, Node.js, React Native, Celery, Django, Flask, Tailwind CSS, StyleX, PostgreSQL, SQL Server, MongoDB, Redis, Google Cloud, AWS, Snowflake, Vercel, Datadog, LangChain, FAISS, RAG, LLMs, Docker, Jenkins, gRPC, Protocol Buffers, Vega Lite
+      \end{itemize}
+    \end{document}

@@ -1,0 +1,168 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Alex J. Mercer} & +45 20 12 34 56 \\
+      Copenhagen, Denmark & alex.mercer@email.com \\
+      \faGithub { }  \href{https://github.com/alexmercer-ai}{https://github.com/alexmercer-ai} & \\
+      \faLinkedin { }  \href{https://linkedin.com/in/alexjmercer}{https://linkedin.com/in/alexjmercer} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Forward-Deployed AI Engineer with over 6 years of experience translating cutting-edge artificial intelligence into production-grade solutions that drive tangible business and healthcare impact. Proven expertise in architecting and deploying LLM-based applications, semantic search pipelines, and autonomous agent frameworks from ideation to scalable production. Adept at collaborating across multidisciplinary teams of data scientists, domain experts, and platform engineers to re-imagine enterprise processes using modern AI standards (MCP, A2A, OpenTelemetry) and cloud-native infrastructures (AWS, Azure, Databricks, Snowflake). Combines strong software engineering fundamentals with continuous learning in generative AI, CI/CD governance, and responsible AI practices. Deeply motivated by leveraging data and AI to solve complex chronic disease challenges, delivering high-quality, patient-centric solutions in dynamic, multinational environments.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{PharmaTech Innovations}{Copenhagen, Denmark}{Senior AI Engineer}{2021-03 - Now}
+        \begin{itemize}
+            \resitem{Spearheaded the end-to-end development of an AI-powered clinical trial matching platform, reducing patient enrollment time by 40\% through semantic search and LLM-driven document parsing.}
+            \resitem{Designed and implemented a modular AI Accelerator framework that standardized the translation of research prototypes into production-ready microservices across 3 business units.}
+            \resitem{Collaborated with data scientists and domain experts to define evaluation benchmarks for AI agents, improving model reliability and safety metrics by 28\%.}
+            \resitem{Integrated modern AI communication standards (MCP, A2A) and observability tools (OpenTelemetry) into the enterprise stack, enabling seamless cross-system agent interactions.}
+            \resitem{Established CI/CD pipelines using GitHub Actions and Terraform, automating testing, containerization, and deployment of AI workloads on AWS and Azure.}
+            \resitem{Mentored a team of 5 junior engineers in best practices for agentic IDE integrations (Cursor, VS Code), rapidly prototyping tools and reducing development cycles by 30\%.}
+        \end{itemize}
+        \item \ressubheading{DataScale Solutions}{Copenhagen, Denmark}{Machine Learning Engineer}{2018-06 - 2021-02}
+        \begin{itemize}
+            \resitem{Architected and deployed vector database infrastructures (Pinecone, Weaviate) to support enterprise semantic search and RAG pipelines processing millions of daily queries.}
+            \resitem{Co-built reusable infrastructure components and evaluation frameworks in partnership with Platform AI teams, enabling company-wide rollout of generative AI capabilities.}
+            \resitem{Optimized LLM inference pipelines through quantization and prompt engineering, reducing latency by 55\% and infrastructure costs by 22\%.}
+            \resitem{Partnered with cross-functional stakeholders to identify automation opportunities, successfully migrating 12 legacy business processes to AI-driven workflows.}
+            \resitem{Maintained rigorous code quality and documentation standards, fostering a culture of continuous feedback and agile iteration in a remote-first, multinational team.}
+        \end{itemize}
+        \item \ressubheading{Nordic Cloud Services}{Copenhagen, Denmark}{Software Engineer (AI/ML Track)}{2016-09 - 2018-05}
+        \begin{itemize}
+            \resitem{Developed backend microservices and data pipelines supporting early-stage machine learning models for predictive analytics and customer segmentation.}
+            \resitem{Implemented automated testing and monitoring frameworks that improved system uptime to 99.9\% and streamlined deployment workflows.}
+            \resitem{Actively participated in hackathons and innovation sprints, delivering rapid prototypes that were later integrated into the company’s core product line.}
+            \resitem{Gained foundational experience in cloud computing, containerization (Docker, Kubernetes), and version control, laying the groundwork for advanced AI engineering.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Enterprise AI Agent Framework \& Evaluation Benchmarks}{}{Lead AI Engineer}{2022-09 - 2023-08}
+        \begin{itemize}
+            \resitem{Led the design and implementation of a multi-agent orchestration platform using MCP and A2A standards, enabling secure, standardized communication between internal AI services.}
+            \resitem{Developed comprehensive evaluation benchmarks for agent performance, safety, and alignment, directly feeding into product AI engineering roadmaps.}
+            \resitem{Collaborated with platform engineers to containerize and deploy the framework on AWS ECS, supporting over 50 internal teams.}
+            \resitem{Produced detailed technical documentation and training materials to drive internal adoption and upskilling across engineering departments.}
+        \end{itemize}
+        \item \ressubheading{Healthcare Document Intelligence Pipeline}{}{Senior AI Engineer}{2020-04 - 2021-05}
+        \begin{itemize}
+            \resitem{Built a RAG-based document processing system leveraging Snowflake for data orchestration and Azure AI Search for semantic retrieval.}
+            \resitem{Integrated modern IDE integrations and agentic coding assistants to accelerate prototyping of NLP components for medical record parsing.}
+            \resitem{Reduced manual document review time by 65\% while maintaining 98.5\% accuracy against expert-labeled ground truth datasets.}
+            \resitem{Ensured compliance with data governance and responsible AI principles by implementing audit trails, data masking, and model monitoring dashboards.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Technical University of Denmark (DTU)}{Copenhagen, Denmark}{MSc Data Science \& Artificial Intelligence}{2014-08 - 2016-06}
+		    \item \ressubheading{Aalborg University}{Copenhagen, Denmark}{BSc Computer Engineering}{2010-08 - 2014-07}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Advanced Large Language Models \& Prompt Engineering}{DeepLearning.AI}{}{2023-05}
+		    \item \ressubheading{Cloud-Native AI Platform Architecture}{AWS \& Databricks Academy}{}{2022-11}
+		    \item \ressubheading{Responsible AI \& AI Governance Frameworks}{Stanford Online}{}{2022-03}
+		    \item \ressubheading{Agentic AI Development \& MCP Standards}{Coursera (University of Michigan)}{}{2023-09}
+		    \item \ressubheading{CI/CD \& DevOps for ML Workloads}{Kubeflow \& GitHub}{}{2021-08}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] Generative AI \& LLMs, AI Agent Frameworks \& Orchestration, MCP (Model Context Protocol), A2A (Agent-to-Agent) Standards, Vector Databases \& Semantic Search, RAG Architectures, OpenTelemetry \& AI Observability, Cloud-Native AI (AWS, Azure, GCP), Databricks \& Snowflake, CI/CD for ML (GitHub Actions, MLflow, DVC), Containerization \& Orchestration (Docker, Kubernetes), Python, Rust, Go, Agentic IDE Integrations (Cursor, VS Code, Copilot, Codex), Responsible AI \& Governance, Model Evaluation \& Benchmarking, Prompt Engineering \& Fine-tuning, RESTful APIs \& Microservices, Data Pipeline Engineering, Agile \& Scrum Methodologies, Technical Stakeholder Management, Cross-Functional Team Leadership, Rapid Prototyping \& Innovation, Documentation \& Technical Writing
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{English}: Fluent (C2)
+		    \item[] \textbf{Danish}: Professional Working Proficiency (B2)
+		    \item[] \textbf{German}: Conversational (B1)
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Patents}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Method and System for Dynamic Agent Communication in Distributed AI Environments}{DK102345A1}{Granted}{2023-02}
+		    \item \ressubheading{Automated Benchmark Generation Framework for LLM-Based Applications}{US2024089123A1}{Under Examination}{2024-01}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Publications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Scalable Evaluation Frameworks for Enterprise AI Agents: Metrics, Benchmarks, and Deployment}{}{}{2023-10}
+		    \item \ressubheading{Bridging Research and Production: A Practical Guide to AI Accelerator Frameworks in Healthcare}{}{}{2022-06}
+		    \item \ressubheading{Optimizing Inference Costs for LLM-Based RAG Systems in Cloud Environments}{}{}{2021-09}
+      \end{itemize}
+    \end{document}

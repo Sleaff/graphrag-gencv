@@ -1,0 +1,148 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Yu Shi} & 917-518-2999 \\
+      Brooklyn, NY, USA & yushiys1007@gmail.com \\
+      \faLinkedin { }  \href{https://linkedin.com}{https://linkedin.com} & \\
+      \faGithub { }  \href{https://github.com}{https://github.com} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Results-driven Front-End Software Engineer with a strong foundation in Full Stack Web Development and a proven track record of delivering high-quality, user-centric digital solutions. Experienced in collaborating within agile environments to design and implement complex user interfaces using ReactJS, Angular, and modern JavaScript frameworks. Adept at bridging the gap between technical requirements and business impact, with a background in business administration that facilitates effective communication with stakeholders. Highly motivated to leverage rapid prototyping skills and continuous learning capabilities to drive innovation in cutting-edge technology environments.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Infosys}{Brooklyn, NY, USA}{Associate / Software Engineer}{October 2021 - February 2023}
+        \begin{itemize}
+            \resitem{Designed and developed responsive user interfaces for client websites utilizing ReactJS, Angular, HTML, CSS, and JavaScript.}
+            \resitem{Enhanced user engagement by 5\% through continuous code refinement and process improvements.}
+            \resitem{Collaborated closely with quality assurance analysts to ensure error-free, high-quality product deliveries.}
+            \resitem{Recognized for rapid adaptation to IDP Development and UX improvements, delivering complex features with minimal rework.}
+            \resitem{Demonstrated high technical agility by mastering and applying client-specific technologies to ensure successful project outcomes.}
+            \resitem{Obtained internal professional certifications in Java, Angular, and .NET to expand technical versatility.}
+        \end{itemize}
+        \item \ressubheading{Taco Bandito}{Brooklyn, NY, USA}{Assistant Manager}{September 2016 - March 2020}
+        \begin{itemize}
+            \resitem{Managed high-volume operations, serving approximately 200 customers daily in a fast-paced environment.}
+            \resitem{Maintained financial accuracy by reconciling daily transactions totaling approximately \$2,000.}
+        \end{itemize}
+        \item \ressubheading{Church of Transfiguration}{Brooklyn, NY, USA}{Administrator}{July 2015 - September 2016}
+        \begin{itemize}
+            \resitem{Facilitated cross-cultural communication by translating official correspondence from English to Chinese for internal teams.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Fotoset}{}{Frontend \& Backend Developer}{Now}
+        \begin{itemize}
+            \resitem{Engineered a photo-sharing application integrated with Map JavaScript API, Geocoding API, and Place API for interactive location-based searches.}
+            \resitem{Implemented secure user authentication using JWT in localStorage and an encrypted user database.}
+            \resitem{Integrated Yahoo Weather API to provide real-time, location-specific weather data and 10-day forecasts.}
+        \end{itemize}
+        \item \ressubheading{Travelatr}{}{Full Stack Developer}{Now}
+        \begin{itemize}
+            \resitem{Developed a Ruby on Rails API backend utilizing the MVC pattern to manage diverse data models.}
+            \resitem{Integrated Skyscanner API to enable real-time flight searches and price comparisons.}
+            \resitem{Built a responsive frontend using ReactJS and custom CSS to optimize user experience and interface fluidity.}
+        \end{itemize}
+        \item \ressubheading{Amazon Clone}{}{Frontend Developer}{Now}
+        \begin{itemize}
+            \resitem{Constructed a functional e-commerce clone utilizing React Context API to manage global state and prevent prop-drilling.}
+            \resitem{Implemented a secure checkout flow by integrating the Stripe Payment Processor.}
+            \resitem{Leveraged Firebase Realtime Database and Cloud Functions for seamless backend data synchronization and order processing.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Flatiron School}{Brooklyn, NY, USA}{Certificate, Full Stack Web Development}{May 2021 - May 2021}
+		    \item \ressubheading{Baruch College / CUNY, Zicklin School of Business}{Brooklyn, NY, USA}{Bachelor of Business Administration, Accounting}{December 2019 - December 2019}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Java Certification}{Infosys}{}{2022}
+		    \item \ressubheading{Angular Certification}{Infosys}{}{2022}
+		    \item \ressubheading{.NET Certification}{Infosys}{}{2022}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] React, JavaScript, Angular, HTML, CSS, JSON, SQL, Redux, Ruby on Rails, PostgreSQL, Firebase, Bootstrap, Git, Netlify, Figma, Adobe Lightroom, Adobe Photoshop, Adobe InDesign, JWT, REST APIs, MVC Architecture, Context API
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{English}: Fluent
+		    \item[] \textbf{Mandarin}: Fluent
+      \end{itemize}
+    \end{document}

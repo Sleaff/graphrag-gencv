@@ -1,0 +1,138 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Paul Patena} & 0426758179 \\
+      Officer South, VIC, Australia & paul@paulpatena.com \\
+      \faGlobe { }  \href{https://www.paulpatena.com/}{https://www.paulpatena.com/} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Passionate Senior Software Engineer with over 18 years of extensive experience in designing, developing, and deploying scalable, high-performance software solutions. Specializing in modern web architectures and cloud-native environments, I possess deep expertise in React, TypeScript, and GraphQL, complemented by a strong backend foundation in Node.js, Python, and Java/Kotlin. As an AWS Certified Solutions Architect and Developer Associate, I excel at bridging the gap between complex technical requirements and impactful business solutions. My career is defined by a proven track record of leading cross-functional teams, mentoring engineers, and driving the entire Software Development Life Cycle (SDLC) to deliver user-centric products in highly regulated and technical sectors, including finance and clinical diagnostic instrumentation.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Atlassian}{Officer South, VIC, Australia}{Senior Software Engineer}{September 2023 - Now}
+        \begin{itemize}
+            \resitem{Leading front-end development for JIRA Work Suggestions, ensuring the delivery of scalable and user-friendly interfaces.}
+            \resitem{Optimizing UI performance and long-term maintainability by utilizing React, Relay, and GraphQL.}
+            \resitem{Driving the complete SDLC, including architecture solution design, development, automated testing, deployment, and operational feedback loops.}
+            \resitem{Collaborating with cross-functional teams to implement industry best practices for code quality and front-end architectural scalability.}
+        \end{itemize}
+        \item \ressubheading{ANZ Bank}{Officer South, VIC, Australia}{Senior Software Consultant}{July 2021 - August 2023}
+        \begin{itemize}
+            \resitem{Spearheaded front-end development for mission-critical credit process applications using React (Hooks, Redux, Formik).}
+            \resitem{Engineered complex data-driven interfaces and large-scale tables utilizing AgGrid and SCSS.}
+            \resitem{Developed and deployed high-performance front-end solutions that significantly improved user experience and application responsiveness.}
+            \resitem{Enhanced delivery velocity by contributing to and optimizing CI/CD pipelines for seamless component integration.}
+        \end{itemize}
+        \item \ressubheading{Family Zone Cyber Safety}{Officer South, VIC, Australia}{Squad Lead \& Senior Full Stack Developer}{September 2020 - May 2021}
+        \begin{itemize}
+            \resitem{Led a dedicated engineering squad to deliver cyber safety web applications tailored for educators.}
+            \resitem{Focused on advanced React development and the implementation of peer-to-peer streaming technologies.}
+        \end{itemize}
+        \item \ressubheading{Leica Biosystems}{Officer South, VIC, Australia}{Software Technical Lead}{April 2016 - September 2020}
+        \begin{itemize}
+            \resitem{Directed the development of critical clinical software used to drive cancer diagnostic instrumentation.}
+            \resitem{Designed the core software architecture that was successfully implemented across three separate engineering teams.}
+            \resitem{Utilized a diverse technology stack including React, Vue, and Python to meet stringent medical software requirements.}
+        \end{itemize}
+        \item \ressubheading{Continental Automotive}{Officer South, VIC, Australia}{Senior Software Engineer}{June 2010 - April 2016}
+        \begin{itemize}
+            \resitem{Developed sophisticated automotive software modules with a focus on high-performance embedded C++.}
+            \resitem{Engineered complex 2D graphics and sound subsystems for automotive applications across Melbourne and Singapore locations.}
+        \end{itemize}
+        \item \ressubheading{Canon Information Technologies}{Officer South, VIC, Australia}{Software Engineer}{May 2008 - April 2010}
+        \begin{itemize}
+            \resitem{Developed high-fidelity transaction-level models of Canon ASICs.}
+            \resitem{Supported software driver development through accurate hardware modeling.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{University of the Philippines Diliman}{Officer South, VIC, Australia}{Bachelor of Science in Electronics and Communications Engineering}{2003 - 2008}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{AWS Certified Solutions Architect – Associate}{Amazon Web Services}{}{N/A}
+		    \item \ressubheading{AWS Certified Developer – Associate}{Amazon Web Services}{}{N/A}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] React, TypeScript, GraphQL, Relay, Next.js, Redux, Formik, AgGrid, ECharts, CSS/SCSS, HTML5, Node.js, Python, Flask, Spring Boot, Java, Kotlin, PostgreSQL, MongoDB, AWS, GCP, Docker, CI/CD, TeamCity, Jenkins, Codefresh, Git, Bitbucket, JIRA, Confluence, PlantUML, DrawIO, Agile, Scrum, Solution Design, SDLC, Embedded C++, Vue.js
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{English}: Professional
+      \end{itemize}
+    \end{document}

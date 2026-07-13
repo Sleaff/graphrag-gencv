@@ -1,0 +1,136 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Sami Alharbi} & +966 53 113 1327 \\
+      Riyadh, Saudi Arabia & sami.obeid@outlook.com \\
+      \faLinkedin { }  \href{https://linkedin.com}{https://linkedin.com} & \\
+      \faGithub { }  \href{https://github.com}{https://github.com} & \\
+      \faGlobe { }  \href{https://portfolio.com}{https://portfolio.com} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Results-driven Software Engineer with nearly 3 years of experience specializing in full-stack development, microservices architecture, and cloud-native technologies. Proven track record in implementing advanced search and data extraction solutions, including Tesseract OCR and Elasticsearch with Arabic-specific stemming, demonstrating a strong capability for handling complex data-centric use cases. Expert in building scalable, event-driven architectures using Kafka and managing containerized environments with Docker and Kubernetes. Proficient in modern DevOps practices, CI/CD pipelines, and Agile methodologies, with a focus on delivering high-quality, production-ready applications that bridge the gap between sophisticated backend processing and seamless user experiences.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Confidential Government Agency}{Riyadh, Saudi Arabia}{Software Engineer}{Dec 2024 - Now}
+        \begin{itemize}
+            \resitem{Designed and engineered a high-impact Document Upload feature utilizing Node.js, .NET, and Next.js.}
+            \resitem{Integrated Tesseract OCR for automated text extraction and implemented Elasticsearch with an Arabic analyzer to provide high-quality full-text search capabilities.}
+            \resitem{Architected data consistency across MongoDB, MinIO, and Elasticsearch using the Saga pattern.}
+            \resitem{Developed an automated retry mechanism via Cronjobs to ensure robust OCR processing reliability.}
+            \resitem{Built a scalable audit logging system to track all system changes with detailed before/after state comparisons.}
+            \resitem{Leveraged Kafka-based event-driven architecture to facilitate non-blocking communication and optimize system performance.}
+            \resitem{Managed deployment of containerized applications using Docker and Nginx reverse proxy configurations.}
+        \end{itemize}
+        \item \ressubheading{Wakeb}{Riyadh, Saudi Arabia}{Software Engineer}{Mar 2023 - Dec 2024}
+        \begin{itemize}
+            \resitem{Developed and maintained robust RESTful APIs for command and control web applications using Vue.js and Spring Boot.}
+            \resitem{Implemented real-time data synchronization via UDP, API, and MQTT integrations.}
+            \resitem{Conducted rigorous field testing to ensure system reliability in mission-critical environments.}
+            \resitem{Enhanced engineering standards by establishing code review processes and Git branching strategies.}
+            \resitem{Mentored internship developers on software best practices and the adoption of emerging technologies.}
+            \resitem{Actively contributed to Agile/Scrum ceremonies, including sprint planning and retrospectives.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{CarShowroom Management System}{}{Full-stack Developer}{Now}
+        \begin{itemize}
+            \resitem{Developed a full-stack application featuring complete CRUD operations, data validation, and pagination.}
+            \resitem{Implemented HATEOAS for enhanced API discoverability.}
+            \resitem{Engineered a complete CI/CD pipeline using Jenkins, Docker, and Docker Compose for automated deployment across Dev, Staging, and Production environments.}
+        \end{itemize}
+        \item \ressubheading{Riyadh Real Estate Bot}{}{Developer}{Now}
+        \begin{itemize}
+            \resitem{Built an autonomous multi-platform social media bot for real-time real estate deal sharing.}
+            \resitem{Utilized Python, Tweepy, and the Telegram Bot API to automate data dissemination.}
+            \resitem{Implemented threading and PM2 for high availability and performance.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Qassim University, Saudi Arabia}{Riyadh, Saudi Arabia}{Bachelor of Information Technology (Second Class Honors)}{2018 - 2023}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Certified Kubernetes Application Developer (CKAD)}{Cloud Native Computing Foundation}{}{Now}
+		    \item \ressubheading{Angular - The Complete Guide (2024 Edition)}{Udemy}{}{Now}
+		    \item \ressubheading{Java Web Developer Nanodegree}{Udacity}{}{Now}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] JavaScript, Java, C\#, Python, React, Vue.js, Angular, Express, Spring Boot, ASP.NET Core, MongoDB, PostgreSQL, Redis, Elasticsearch, Docker, Kubernetes, Jenkins, Kafka, MinIO, Nginx, Git, REST APIs, gRPC, Microservices, CI/CD, Agile/Scrum, Tesseract OCR, Saga Pattern, Event-Driven Architecture, MQTT, UDP
+      \end{itemize}
+    \end{document}

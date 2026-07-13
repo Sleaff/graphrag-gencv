@@ -1,0 +1,140 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Paul Michael Patena} & 0426758179 \\
+      Officer South, Australia & paul@paulpatena.com \\
+      \faGlobe { }  \href{https://www.paulpatena.com/}{https://www.paulpatena.com/} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Passionate Senior Software Engineer with over 18 years of extensive experience specializing in front-end development and scalable software architecture. Expert in modern web frameworks including React, TypeScript, and GraphQL, with a strong foundation in cloud services across AWS and GCP. Proven track record of leading technical teams and driving the full Software Development Life Cycle (SDLC)—from solution design and rapid prototyping to deployment and operational feedback. An AWS Certified Developer and Solutions Architect with deep expertise in designing performant, enterprise-grade solutions, mentoring cross-functional teams, and implementing robust CI/CD pipelines to ensure seamless integration and delivery in high-stakes environments.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Atlassian}{Officer South, Australia}{Senior Software Engineer}{September 2023 - Now}
+        \begin{itemize}
+            \resitem{Leading front-end development for JIRA Work Suggestions, focusing on the creation of scalable, user-friendly, and high-performance interfaces.}
+            \resitem{Optimizing UI performance and maintainability through the expert use of React, Relay, and GraphQL.}
+            \resitem{Driving the complete SDLC, including solution design, development, testing, deployment, and gathering operational feedback.}
+            \resitem{Collaborating closely with cross-functional teams to implement industry best practices for code quality and front-end architecture scalability.}
+            \resitem{Engaging in full-stack development activities to support complex product requirements.}
+        \end{itemize}
+        \item \ressubheading{ANZBank}{Officer South, Australia}{Senior Software Consultant}{July 2021 - August 2023}
+        \begin{itemize}
+            \resitem{Led front-end development for critical banking credit process applications.}
+            \resitem{Developed complex forms and high-density data tables using React (Hooks, Redux, Formik) and AgGrid.}
+            \resitem{Engineered and deployed front-end solutions that significantly improved user experience and application performance.}
+            \resitem{Contributed to and optimized CI/CD pipelines to ensure the seamless integration and delivery of enterprise components.}
+            \resitem{Utilized a diverse tech stack including TypeScript, Python, MongoDB, and Spring Boot.}
+        \end{itemize}
+        \item \ressubheading{Family Zone Cyber Safety}{Officer South, Australia}{Squad Lead \& Senior Full Stack Developer}{September 2020 - May 2021}
+        \begin{itemize}
+            \resitem{Led a development squad in delivering specialized cyber safety web applications for educational environments.}
+            \resitem{Spearheaded front-end development using React.}
+            \resitem{Implemented peer-to-peer streaming technologies to enhance application functionality.}
+            \resitem{Provided technical leadership and mentorship to the engineering team.}
+        \end{itemize}
+        \item \ressubheading{Leica Biosystems}{Officer South, Australia}{Software Technical Lead}{April 2016 - September 2020}
+        \begin{itemize}
+            \resitem{Led the development of critical clinical software used in driving cancer diagnostic instruments.}
+            \resitem{Designed high-level software architecture implemented across three distinct engineering teams.}
+            \resitem{Developed robust interfaces using a combination of React, Vue.js, and Python.}
+            \resitem{Bridged the gap between complex clinical requirements and technical implementation.}
+        \end{itemize}
+        \item \ressubheading{Continental Automotive}{Officer South, Australia}{Senior Software Engineer}{June 2010 - July 2015}
+        \begin{itemize}
+            \resitem{Developed advanced automotive software modules with a focus on embedded systems.}
+            \resitem{Utilized C++ to engineer 2D graphics and sound subsystem components.}
+            \resitem{Worked within highly regulated and technical automotive environments.}
+        \end{itemize}
+        \item \ressubheading{Canon Information Technologies}{Officer South, Australia}{Software Engineer}{May 2008 - April 2010}
+        \begin{itemize}
+            \resitem{Developed transaction-level models of Canon ASICs.}
+            \resitem{Supported software driver development through precise modeling techniques.}
+            \resitem{Gained foundational experience in low-level hardware-software interaction.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{University of the Philippines Diliman}{Officer South, Australia}{Electronics and Communications Engineering}{2003 - 2008}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{AWS Certified Developer Associate}{AWS}{}{Now}
+		    \item \ressubheading{AWS Certified Solutions Architect Associate}{AWS}{}{Now}
+		    \item \ressubheading{Licensed Electronics Engineer}{Professional Regulation Commission Philippines}{}{2008}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] React, TypeScript, GraphQL, Relay, Redux, Vue.js, Next.js, JavaScript, HTML5, CSS/SCSS, AgGrid, Formik, Python, Python Flask, Java, Kotlin, Spring Boot, Node.js, C++, Embedded Systems, AWS, GCP, Docker, CI/CD Pipelines, Jenkins, TeamCity, Codefresh, Bitbucket, Git, PostgreSQL, MongoDB, SDLC, Agile, Scrum, JIRA, Confluence, Solution Design, Software Architecture, Rapid Prototyping
+      \end{itemize}
+    \end{document}

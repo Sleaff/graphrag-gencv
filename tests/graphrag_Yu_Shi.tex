@@ -1,0 +1,153 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Yu Shi} & 917-518-2999 \\
+      Brooklyn, United States & yushiys1007@gmail.com \\
+      \faGithub { }  \href{GitHub}{GitHub} & \\
+      \faGlobe { }  \href{Blog}{Blog} & \\
+      \faLinkedin { }  \href{LinkedIn}{LinkedIn} & \\
+      \faGlobe { }  \href{Portfolio}{Portfolio} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Versatile Front-End Software Engineer with a strong foundation in full-stack web development and a proven track record of delivering high-impact digital solutions. Expert in building interactive, scalable user interfaces using ReactJS, Angular, and modern JavaScript frameworks. Experienced in the full software development lifecycle, from rapid prototyping to integrating complex third-party APIs (Google Maps, Stripe, Skyscanner) and managing secure backend services via Firebase and Ruby on Rails. A continuous learner with certifications in Java, .NET, and Angular, dedicated to driving user engagement and operational efficiency through clean code and collaborative problem-solving in dynamic, multinational environments.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Infosys}{Brooklyn, United States}{Associate / Software Engineer}{October 2021 - February 2023}
+        \begin{itemize}
+            \resitem{Designed and developed responsive user interfaces for client websites utilizing ReactJS, Angular, HTML, CSS, and JavaScript.}
+            \resitem{Optimized existing features and refined codebases, resulting in a 5\% increase in user engagement and smoother operational workflows.}
+            \resitem{Collaborated closely with Quality Assurance analysts to identify and resolve bugs, ensuring the delivery of high-quality, error-free software products.}
+            \resitem{Demonstrated rapid technical adaptability by mastering and implementing new technologies to meet complex project requirements.}
+            \resitem{Worked within a cross-functional web development team to translate client requirements into functional technical specifications.}
+        \end{itemize}
+        \item \ressubheading{Taco Bandito}{Brooklyn, United States}{Assistant Manager}{September 2016 - March 2020}
+        \begin{itemize}
+            \resitem{Managed high-volume daily operations in a fast-paced environment, serving approximately 200 customers per day.}
+            \resitem{Ensured financial accuracy by reconciling daily transactions totaling approximately \$2,000.}
+        \end{itemize}
+        \item \ressubheading{Church of Transfiguration}{Brooklyn, United States}{Administrator}{July 2015 - September 2016}
+        \begin{itemize}
+            \resitem{Facilitated international communication by translating official church documentation between English and Chinese.}
+            \resitem{Collaborated with internal team members to ensure accuracy and cultural nuance in all translated correspondence.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Fotoset}{}{Frontend | Backend}{N/A - N/A}
+        \begin{itemize}
+            \resitem{Engineered a comprehensive photo-sharing application featuring advanced search capabilities via Google Maps, Geocoding, and Place APIs.}
+            \resitem{Implemented secure user authentication using JWT (JSON Web Tokens) stored in localStorage.}
+            \resitem{Integrated Yahoo Weather API to provide real-time, location-specific weather data and 10-day forecasts.}
+            \resitem{Developed a secure and encrypted user database to protect sensitive user information.}
+        \end{itemize}
+        \item \ressubheading{Amazon Clone}{}{Frontend | Backend}{N/A - N/A}
+        \begin{itemize}
+            \resitem{Developed a full-featured e-commerce clone with integrated checkout functionality.}
+            \resitem{Utilized Firebase Realtime Database and Firebase Cloud Functions for seamless backend data processing and order management.}
+            \resitem{Managed complex application state using React Context API to prevent prop-drilling and optimize component performance.}
+            \resitem{Integrated Stripe Payment Processor to facilitate secure, real-time financial transactions.}
+        \end{itemize}
+        \item \ressubheading{Travelatr}{}{Frontend | Backend}{N/A - N/A}
+        \begin{itemize}
+            \resitem{Built a travel information platform providing destination recommendations and flight search capabilities.}
+            \resitem{Architected a Ruby on Rails API backend following the MVC pattern for robust data management.}
+            \resitem{Implemented the Skyscanner API to allow users to search and compare real-time flight prices.}
+            \resitem{Constructed a highly interactive UI using ReactJS functional components and custom CSS to enhance user experience.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Flatiron School}{Brooklyn, United States}{Ruby on Rails and JavaScript (Full Stack Web Development)}{N/A - May 2021}
+		    \item \ressubheading{Baruch College / CUNY, Zicklin School of Business}{Brooklyn, United States}{Accounting}{N/A - December 2019}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Courses \& Certifications}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Java}{Infosys}{}{N/A}
+		    \item \ressubheading{.NET}{Infosys}{}{N/A}
+		    \item \ressubheading{Angular}{Infosys}{}{N/A}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] ReactJS, Angular, JavaScript, Ruby on Rails, HTML5, CSS3, Bootstrap, Material-UI, ASP.NET, .NET, Java, SQL, PostgreSQL, Firebase, Git, JWT, React Context API, JSON, Google Maps API, Stripe API, Skyscanner API, Yahoo Weather API, Adobe Photoshop, Adobe Lightroom, Adobe InDesign, Figma, Netlify
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Languages}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] \textbf{English}: Fluent
+		    \item[] \textbf{Mandarin}: Fluent
+      \end{itemize}
+    \end{document}

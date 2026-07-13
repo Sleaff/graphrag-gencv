@@ -15,29 +15,30 @@ from vector_service import generate_and_store_embedding
 
 
 class Address(BaseModel):
-    city: str
-    country: str
+    city: Optional[str] = None
+    country: Optional[str] = None
     street: Optional[str] = None
     postal_code: Optional[str] = None
 
 
 class Job(BaseModel):
     company: str
-    title: str
-    start: str
+    title: Optional[str] = None
+    start: Optional[str] = None
     end: Optional[str] = None
     description: Optional[str] = None
-    is_current: bool = False
+    is_current: Optional[bool] = False
     career_level: Optional[str] = None
     job_type: Optional[str] = None
     raw_skills: List[str] = Field(default_factory=list)
+    address: Optional[Address] = None
 
 
 class Education(BaseModel):
     degree: str
-    institution: str
-    start_date: str
-    end_date: str
+    institution: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
     field_of_study: Optional[str] = None
     description: Optional[str] = None
 
@@ -71,7 +72,7 @@ class Project(BaseModel):
     description: Optional[str] = None
     url: Optional[str] = None
     creator: Optional[str] = None
-    is_current: bool = False
+    is_current: Optional[bool] = False
 
 
 class Language(BaseModel):
@@ -123,6 +124,7 @@ class CandidateProfile(BaseModel):
     gender: Optional[str] = None
     nationality: Optional[str] = None
     date_of_birth: Optional[str] = None
+    address: Optional[Address] = None
     drivers_licence: Optional[str] = None
     short_description: Optional[str] = None
     long_description: Optional[str] = None
@@ -139,7 +141,6 @@ class CandidateProfile(BaseModel):
     technical_skills: List[str] = Field(default_factory=list)
     languages: List[Language] = Field(default_factory=list)
     target: Optional[Target] = None
-    address: Optional[Address] = None
     websites: List[Website] = Field(default_factory=list)
     instant_messaging: List[InstantMessaging] = Field(default_factory=list)
     honors: List[HonorAward] = Field(default_factory=list)
@@ -162,7 +163,7 @@ Return ONLY a valid JSON object matching this schema exactly:
     "name": "full name", "gender": "...", "nationality": "...", "date_of_birth": "...", "drivers_licence": "...", "short_description": "...", "long_description": "...",
     "email": "...",
     "phone_mobile": "...", "phone_home": "...", "phone_work": "...",
-    "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "career_level": "...", "job_type": "...", "raw_skills": ["..."], "description": "...", "is_current": false}],
+    "jobs": [{"company": "...", "title": "...", "start": "...", "end": "...", "career_level": "...", "job_type": "...", "raw_skills": ["..."], "description": "...", "is_current": false, "address": {"city": "...", "country": "...", "street": "...", "postal_code": "..."}}],
     "education": [{"degree": "...", "institution": "...", "start_date": "...", "end_date": "...", "field_of_study": "...", "description": "..."}],
     "courses": [{"title": "...", "description": "...", "url": "...", "start_date": "...", "finish_date": "...", "has_certification": true, "organized_by": "..."}],
     "patents": [{"title": "...", "office": "...", "number": "...", "inventor": "...", "url": "...", "description": "...", "issued_date": "...", "status": "..."}],
@@ -184,6 +185,9 @@ Return ONLY a valid JSON object matching this schema exactly:
     candidate_data_json = call_llm(messages)
     logger.debug(f"LLM returned candidate data: {candidate_data_json}")
 
+    if not candidate_data_json:
+        raise ValueError("LLM returned empty candidate data.")
+
     try:
         if "```json" in candidate_data_json:
             candidate_data_json = (
@@ -202,15 +206,14 @@ Return ONLY a valid JSON object matching this schema exactly:
     candidate_slug = candidate_data.name.replace(" ", "_").lower()
     data_dict = candidate_data.model_dump()
 
-    # Aggregate Skills
-    # Gather every unique skill from both the 'technical_skills' array and 'jobs' arrays
+    # Aggregate Skills, gather every unique skill from both the 'technical_skills' array and 'jobs' arrays
     all_raw_skills = set(data_dict.get("technical_skills", []))
     for job in data_dict.get("jobs", []):
         all_raw_skills.update(job.get("raw_skills", []))
 
     all_raw_skills_list = list(all_raw_skills)
 
-    # Transform & Enrich ---
+    # Transform & Enrich
     if all_raw_skills_list:
         logger.info(f"Batch mapping {len(all_raw_skills_list)} unique skills...")
         mapped_skills = batch_map_skills_to_esco(all_raw_skills_list)
@@ -232,10 +235,10 @@ Return ONLY a valid JSON object matching this schema exactly:
             {"name": skill, "esco_data": enriched_skills.get(skill)}
             for skill in job.get("raw_skills", [])
         ]
-        # Clean up the raw_skills key if you want
+        # Clean up the raw_skills key
         job.pop("raw_skills", None)
 
-    # Generate Embeddings for textual components
+    # Generate Embeddings for textual components - Experiement
     for idx, job in enumerate(data_dict["jobs"]):
         job["vector_id"] = generate_and_store_embedding(
             candidate_slug, f"job_{idx}", job.get("description", "")

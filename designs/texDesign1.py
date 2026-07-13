@@ -101,8 +101,8 @@ publicationTitle = {
 }
 
 def format_date(date_str: str, as_year_only=False):
-    if not date_str or date_str.lower() == "present":
-        return "Now"
+    if not date_str or str(date_str).strip().upper() == "N/A" or str(date_str).strip().lower() == "none":
+        return ""
     try:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
         return dt.strftime("%Y") if as_year_only else dt.strftime("%b %Y")
@@ -155,9 +155,17 @@ def generateMainDesign1(profile, language="en"):
         for job in jobs:
             start = format_date(job.get("start"))
             end = format_date(job.get("end"))
-            city_country = f"{city}, {country}" if city else ""
+            date_str = " - ".join(filter(None, [start, end]))
+            job_addr = job.get("address") or {}
+            job_city = job_addr.get("city", "")
+            job_country = job_addr.get("country", "")
+            
+            if job_city and job_country:
+                city_country = f"{job_city}, {job_country}"
+            else:
+                city_country = job_city or job_country or ""
 
-            main += f"""\n        \\item \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{start} - {end}}}"""
+            main += f"""\n        \\item \\ressubheading{{{job.get("company")}}}{{{city_country}}}{{{job.get("title")}}}{{{date_str}}}"""
             
             highlights = job.get("highlights", [])
             if highlights:
@@ -174,7 +182,7 @@ def generateMainDesign1(profile, language="en"):
         for proj in projects:
             start = format_date(proj.get("start"), True)
             end = format_date(proj.get("end"), True)
-            date_str = f"{start} - {end}" if start != "Now" and end != "Now" else start
+            date_str = " - ".join(filter(None, [start, end]))
             
             main += f"""\n        \\item \\ressubheading{{{proj.get("name")}}}{{}}{{{proj.get("role")}}}{{{date_str}}}"""
             
@@ -193,9 +201,9 @@ def generateMainDesign1(profile, language="en"):
         for edu in education:
             start = format_date(edu.get("start_date"), True)
             end = format_date(edu.get("end_date"), True)
-            city_country = f"{city}, {country}" if city else ""
+            date_str = " - ".join(filter(None, [start, end]))
 
-            main += f"""\n\t\t    \\item \\ressubheading{{{edu.get("institution")}}}{{{city_country}}}{{{edu.get("degree")}}}{{{start} - {end}}}"""
+            main += f"""\n\t\t    \\item \\ressubheading{{{edu.get("institution")}}}{{{""}}}{{{edu.get("degree")}}}{{{date_str}}}"""
         main += "\n      \\end{itemize}"
 
     # Courses & Certifications
@@ -224,7 +232,6 @@ def generateMainDesign1(profile, language="en"):
                 lang_name = lang.get("name", "")
                 proficiency = lang.get("proficiency", "")
                 if lang_name and proficiency:
-                    # Made the language bold and fixed the formatting
                     main += f"\n\t\t    \\item[] \\textbf{{{lang_name}}}: {proficiency}"
                 elif lang_name:
                     main += f"\n\t\t    \\item[] {lang_name}"
@@ -237,7 +244,8 @@ def generateMainDesign1(profile, language="en"):
     if patents:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{Patents}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
         for pat in patents:
-            main += f"""\n\t\t    \\item \\ressubheading{{{pat.get("title")}}}{{{pat.get("number")}}}{{{pat.get("status")}}}{{{pat.get("date")}}}"""
+            date = format_date(pat.get("date"))
+            main += f"""\n\t\t    \\item \\ressubheading{{{pat.get("title")}}}{{{pat.get("number")}}}{{{pat.get("status")}}}{{{date}}}"""
         main += "\n      \\end{itemize}"
 
     # Publications
@@ -245,7 +253,8 @@ def generateMainDesign1(profile, language="en"):
     if publications:
         main += f"\n      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\resheading{{{publicationTitle.get(language, 'Publications')}}}\n\t    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\t    \\begin{{itemize}}"
         for pub in publications:
-            main += f"""\n\t\t    \\item \\ressubheading{{{pub.get("title")}}}{{}}{{}}{{{pub.get("date")}}}"""
+            date = format_date(pub.get("date"))
+            main += f"""\n\t\t    \\item \\ressubheading{{{pub.get("title")}}}{{}}{{}}{{{date}}}"""
         main += "\n      \\end{itemize}"
 
     main += "\n    \\end{document}"

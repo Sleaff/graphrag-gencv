@@ -128,8 +128,9 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
     for idx, job in enumerate(candidate_data.get("jobs", [])):
         work_uri = URIRef(f"http://example.com/data/work_{candidate_slug}_{idx}")
         company_name = job.get("company", "Unknown")
+        
         company_uri = URIRef(
-            f"http://example.com/data/comp_{sanitize_uri_string(company_name)}"
+            f"http://example.com/data/comp_{candidate_slug}_{idx}_{sanitize_uri_string(company_name)}"
         )
 
         g.add((cv_uri, MY0.hasWorkHistory, work_uri))
@@ -170,6 +171,20 @@ def create_rdf_graph(candidate_data: dict) -> Graph:
         g.add((work_uri, MY0.employedIn, company_uri))
         g.add((company_uri, RDF.type, MY0.Company))
         g.add((company_uri, MY0.orgName, Literal(company_name, datatype=XSD.string)))
+
+        job_addr = job.get("address")
+        if job_addr:
+            job_addr_uri = URIRef(f"http://example.com/data/addr_comp_{candidate_slug}_{idx}")
+            g.add((company_uri, MY0.orgAddress, job_addr_uri))
+            g.add((job_addr_uri, RDF.type, MY0.Address))
+            if job_addr.get("city"):
+                g.add((job_addr_uri, MY0.city, Literal(job_addr["city"], datatype=XSD.string)))
+            if job_addr.get("country"):
+                g.add((job_addr_uri, MY0.country, Literal(job_addr["country"], datatype=XSD.string)))
+            if job_addr.get("street"):
+                g.add((job_addr_uri, MY0.street, Literal(job_addr["street"], datatype=XSD.string)))
+            if job_addr.get("postal_code"):
+                g.add((job_addr_uri, MY0.postalCode, Literal(job_addr["postal_code"], datatype=XSD.string)))
 
         for skill_dict in job.get("esco_skills", []):
             skill_name = skill_dict.get("name", "")

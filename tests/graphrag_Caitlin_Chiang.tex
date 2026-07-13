@@ -1,0 +1,167 @@
+
+    \documentclass[letterpaper,11pt]{article}
+    \newlength{\outerbordwidth}
+    \pagestyle{empty}
+    \raggedbottom
+    \raggedright
+    \usepackage[svgnames]{xcolor}
+    \usepackage{framed}
+    \usepackage{tocloft}
+
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[utf8]{inputenc}
+    \usepackage[]{babel}
+    \usepackage{fontawesome}
+    \usepackage{hyperref}
+
+    %-----------------------------------------------------------
+    %Edit these values as you see fit
+
+    \setlength{\outerbordwidth}{2pt}  % Width of border outside of title bars
+    \definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
+    \definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
+
+    %-----------------------------------------------------------
+    %Margin setup
+
+    \setlength{\evensidemargin}{-0.25in}
+    \setlength{\headheight}{0in}
+    \setlength{\headsep}{0in}
+    \setlength{\oddsidemargin}{-0.25in}
+    \setlength{\paperheight}{11in}
+    \setlength{\paperwidth}{8.5in}
+    \setlength{\tabcolsep}{0in}
+    \setlength{\textheight}{9.5in}
+    \setlength{\textwidth}{7in}
+    \setlength{\topmargin}{-0.3in}
+    \setlength{\topskip}{0in}
+    \setlength{\voffset}{0.1in}
+
+    %-----------------------------------------------------------
+    %Custom commands
+    \newcommand{\resitem}[1]{\item #1 \vspace{-2pt}}
+    \newcommand{\resheading}[1]{\vspace{6pt}
+    \parbox{\textwidth}{\setlength{\FrameSep}{\outerbordwidth}
+        \begin{shaded}
+    \setlength{\fboxsep}{0pt}\framebox[\textwidth][l]{\setlength{\fboxsep}{2pt}\fcolorbox{shadecolorB}{shadecolorB}{\textbf{\sffamily{\mbox{~}\makebox[6.8in][l]{\large #1} \vphantom{p\^{E}}}}}}
+        \end{shaded}
+    }\vspace{-6pt}
+    }
+    \newcommand{\ressubheading}[4]{
+    \begin{tabular*}{6.5in}{p{4.8in}@{\extracolsep{\fill}}r}
+            \textbf{#1} & #2 \\
+            \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-8pt}}
+    %-----------------------------------------------------------
+
+    \begin{document}
+    
+      \begin{tabular*}{7in}{l@{\extracolsep{\fill}}r}
+      \textbf{\Large Caitlin Chiang} & 8451-0986 \\
+      Singapore, Singapore & chiangcaitlin2003@gmail.com \\
+      \faGlobe { }  \href{https://caitlinchiang.xyz/}{https://caitlinchiang.xyz/} & \\
+      \faLinkedin { }  \href{https://linkedin.com/in/caitlin-chiang}{https://linkedin.com/in/caitlin-chiang} & \\
+      \end{tabular*}
+      \vspace{5pt}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Summary}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+      \item[] Innovative AI Software Engineer with extensive experience in architecting and deploying production-ready AI platforms, multi-agent systems, and scalable web applications. Proven track record in translating complex business and clinical requirements into high-impact technical solutions, ranging from healthcare analytics dashboards to generative AI-powered engagement platforms. Expert in full-stack development, LLM integration, and agentic workflows, with a strong foundation in system architecture and data engineering. Adept at leading cross-functional teams and mentoring engineers to deliver robust, scalable, and user-centric software in fast-paced, mission-driven environments.
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Work Experience}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{Liminal}{Singapore, Singapore}{AI Software Engineer}{Now - Now}
+        \begin{itemize}
+            \resitem{Engineered a production-ready full-stack multi-agent AI platform enabling configurable workflows, dynamic query execution, and customizable result management.}
+            \resitem{Developed a responsive React-based chat interface featuring editable tables, configurable schemas, and real-time data visualization to enhance user productivity.}
+            \resitem{Architected a modular backend platform integrating multiple LLM providers, sophisticated prompt engineering strategies, and extensible AI workflows for scalable feature development.}
+        \end{itemize}
+        \item \ressubheading{Xweave.io}{Singapore, Singapore}{Software Engineer}{May 2025 - Now}
+        \begin{itemize}
+            \resitem{Architected and delivered secure integrations with multiple digital asset exchange providers, enabling scalable cross-border payment orchestration through standardized REST APIs.}
+            \resitem{Designed and productionized an event-driven webhook architecture to provide reliable, real-time transaction synchronization across distributed payment systems.}
+            \resitem{Architected and implemented a modular mid-market rate service using object-oriented design principles for efficient retrieval and synchronization of fiat and cryptocurrency rates.}
+            \resitem{Led and mentored two software engineers through technical guidance, code reviews, and architectural discussions to improve delivery velocity.}
+        \end{itemize}
+        \item \ressubheading{Moya}{Singapore, Singapore}{Software Engineer}{Oct 2024 - Mar 2025}
+        \begin{itemize}
+            \resitem{Engineered automated data processing pipelines to aggregate, transform, and consolidate large CSV datasets into standardized analytical outputs and master datasets.}
+            \resitem{Designed reusable scripts to generate abatement curves and analytical datasets, significantly improving data processing efficiency and consistency.}
+        \end{itemize}
+        \item \ressubheading{SUTD campusX}{Singapore, Singapore}{Software Engineer}{Jan 2023 - Dec 2023}
+        \begin{itemize}
+            \resitem{Collaborated with university faculty to architect and deliver an AI-powered learning platform enhancing educational workflows and student engagement.}
+            \resitem{Engineered a modular application framework configurable for multiple university courses.}
+            \resitem{Defined the application's system architecture and relational database design, prioritizing scalability and long-term extensibility.}
+        \end{itemize}
+        \item \ressubheading{Jublia}{Singapore, Singapore}{Software Engineer}{Aug 2023 - Dec 2023}
+        \begin{itemize}
+            \resitem{Redesigned a user-centric dashboard experience, significantly improving usability and application navigation.}
+            \resitem{Modernized a legacy Vue.js application by refactoring reusable components into a modular, maintainable architecture.}
+            \resitem{Automated database integrity validation through scheduled monitoring scripts, reducing manual verification efforts and improving reliability.}
+        \end{itemize}
+        \item \ressubheading{Dashlabs.ai}{Singapore, Singapore}{Software Engineer}{Dec 2020 - Dec 2021}
+        \begin{itemize}
+            \resitem{Led and mentored a team of seven software engineers, providing technical leadership and architectural guidance for healthcare analytics solutions.}
+            \resitem{Collaborated with medical professionals to translate complex clinical requirements into scalable analytical software.}
+            \resitem{Delivered over 30 production features that streamlined healthcare workflows and improved operational efficiency.}
+            \resitem{Engineered over 20 interactive analytics dashboards and architected data aggregation pipelines to transform complex healthcare datasets into actionable insights.}
+        \end{itemize}
+        \item \ressubheading{Dragonpay Corporation}{Singapore, Singapore}{Freelance Software Engineer}{Jun 2021 - Jul 2021}
+        \begin{itemize}
+            \resitem{Developed and deployed an internal employee wellness platform to streamline organizational health tracking and reporting.}
+            \resitem{Engineered an internal expense management application that automated financial workflows and improved operational efficiency for the finance team.}
+        \end{itemize}
+        \item \ressubheading{Self-Employed}{Singapore, Singapore}{Freelance Software Engineer}{Mar 2020 - Jun 2021}
+        \begin{itemize}
+            \resitem{Partnered with business owners to translate strategic objectives into scalable web application solutions.}
+            \resitem{Designed and developed end-to-end e-commerce platforms spanning customer-facing experiences and administrative management systems.}
+            \resitem{Architected application databases and backend systems with a focus on maintainability and long-term growth.}
+        \end{itemize}
+        \item \ressubheading{Philippine Red Cross}{Singapore, Singapore}{Software Engineer}{Jul 2021 - Oct 2021}
+        \begin{itemize}
+            \resitem{Developed automated module-level testing scripts to improve software reliability, maintainability, and deployment confidence.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \resheading{Projects}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \begin{itemize}
+        \item \ressubheading{AI-Powered Public Engagement Platform}{}{Team Lead and Software Engineer}{Sept 2024 - Dec 2024}
+        \begin{itemize}
+            \resitem{Led a team of four engineers to architect an AI platform that transforms user ideas into AI-generated visual concepts.}
+            \resitem{Integrated advanced generative AI techniques, including prompt engineering and image inpainting, to improve output quality.}
+            \resitem{Designed a modular architecture enabling administrators to customize engagement workflows without code changes.}
+            \resitem{Ensured strict consistency between UX design specifications and production-ready software implementation.}
+        \end{itemize}
+        \item \ressubheading{Consumer Analytics \& Data Visualization Platform}{}{Technical Lead and Software Engineer}{May 2023 - Aug 2023}
+        \begin{itemize}
+            \resitem{Led a team of six engineers to deliver a data visualization platform for P\&G's R\&D organization to analyze consumer behavior.}
+            \resitem{Engineered automated CSV ingestion and processing pipelines to transform raw datasets into interactive analytical visualizations.}
+            \resitem{Developed interactive dashboards enabling researchers to compare multi-dimensional datasets via configurable timelines and charts.}
+            \resitem{Integrated AI-powered image analysis to extract visual attributes and emotional signals from consumer-submitted images.}
+        \end{itemize}
+        \item \ressubheading{Queue Simulation \& Operational Planning Dashboard}{}{Team Lead and Software Engineer}{Jan 2024 - May 2024}
+        \begin{itemize}
+            \resitem{Led a team of five engineers to develop a configurable web-based queue simulation platform for banking branch operational planning.}
+            \resitem{Architected a scalable and modular system design to support flexible simulation scenarios and future platform extensibility.}
+        \end{itemize}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Education}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item \ressubheading{Singapore University of Technology and Design (SUTD)}{Singapore, Singapore}{Computer Science and Digital Humanities}{Sept 2021 - May 2025}
+      \end{itemize}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \resheading{Technical Skills}
+	    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	    \begin{itemize}
+		    \item[] Python, TypeScript, JavaScript, Ruby, React.js, Next.js, Vue.js, Node.js, Express.js, Flask, Ruby on Rails, LLM, LangChain, LangGraph, Prompt Engineering, AI Workflows, Multi-Agent Systems, Full-Stack Development, REST APIs, GraphQL (Apollo), MySQL, PostgreSQL, MongoDB, Firebase, AWS, GCP, Netlify, System Architecture, Relational Databases, Database Architecture, Data Pipelines, ETL, Data Visualization, UI/UX Design, Automated Testing, Cypress, Git, HTML, CSS, Material UI, Chakra UI, Cloudinary
+      \end{itemize}
+    \end{document}

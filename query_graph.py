@@ -18,6 +18,7 @@ def get_candidate_profile(candidate_name: str):
         ?phoneMobile ?phoneHome ?phoneWork 
         ?imName ?imUsername 
         ?jobTitle ?companyName ?startDate ?endDate ?jobDescription ?careerLevel ?jobType ?jobSkillUri ?jobSkillName ?jobParentLabel
+        ?jobCity ?jobCountry
         ?degree ?institution ?eduStart ?eduGrad ?eduDesc 
         ?crsTitle ?crsDesc ?crsUrl ?crsStart ?crsEnd ?crsCert ?crsOrg 
         ?patTitle ?patOffice ?patNum ?patInv ?patUrl ?patDesc ?patDate ?patStatus 
@@ -57,6 +58,12 @@ def get_candidate_profile(candidate_name: str):
             OPTIONAL {{ ?job my0:jobDescription ?jobDescription . }}
             OPTIONAL {{ ?job my0:careerLevel ?clObj . ?clObj rdfs:label ?careerLevel . }}
             OPTIONAL {{ ?job my0:jobType ?jtObj . ?jtObj rdfs:label ?jobType . }}
+
+            OPTIONAL {{ 
+                ?company my0:orgAddress ?jobAddr . 
+                OPTIONAL {{ ?jobAddr my0:city ?jobCity . }}
+                OPTIONAL {{ ?jobAddr my0:country ?jobCountry . }}
+            }}
             
             OPTIONAL {{ 
                 ?job my0:hasSkill ?jobSkillUri .
@@ -225,20 +232,32 @@ def get_candidate_profile(candidate_name: str):
         if "phoneWork" in row and not profile["phone_work"]:
             profile["phone_work"] = row["phoneWork"]["value"]
 
-        # Jobs
         if "jobTitle" in row:
-            job_key = row["jobTitle"]["value"] + row["companyName"]["value"]
+            start_val = row.get("startDate", {}).get("value", "UnknownStart")
+            job_key = row["jobTitle"]["value"] + row["companyName"]["value"] + start_val
+            
             if job_key not in profile["jobs"]:
                 profile["jobs"][job_key] = {
                     "title": row["jobTitle"]["value"],
                     "company": row["companyName"]["value"],
-                    "start": row["startDate"]["value"],
+                    "start": row.get("startDate", {}).get("value", ""),
                     "end": row.get("endDate", {}).get("value", "Present"),
                     "description": row.get("jobDescription", {}).get("value", ""),
                     "career_level": row.get("careerLevel", {}).get("value", ""),
                     "job_type": row.get("jobType", {}).get("value", ""),
+                    "address": {
+                        "city": row.get("jobCity", {}).get("value", ""),
+                        "country": row.get("jobCountry", {}).get("value", "")
+                    },
                     "raw_skills": {},
                 }
+            else:
+                # Ensure address updates if missing in first row but present in subsequent rows
+                if not profile["jobs"][job_key]["address"]["city"] and "jobCity" in row:
+                    profile["jobs"][job_key]["address"]["city"] = row["jobCity"]["value"]
+                if not profile["jobs"][job_key]["address"]["country"] and "jobCountry" in row:
+                    profile["jobs"][job_key]["address"]["country"] = row["jobCountry"]["value"]
+                
             if "jobSkillUri" in row:
                 j_uri = row["jobSkillUri"]["value"]
                 j_name = row.get("jobSkillName", {}).get("value", j_uri.split("/")[-1])
@@ -246,7 +265,6 @@ def get_candidate_profile(candidate_name: str):
                 if j_name not in profile["jobs"][job_key]["raw_skills"]:
                     profile["jobs"][job_key]["raw_skills"][j_name] = {
                         "name": j_name,
-                        # "uri": j_uri,
                         "parents": set(),
                     }
 
