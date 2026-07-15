@@ -233,6 +233,7 @@ async def map_cv_to_rdf(cv_markdown: str) -> str:
 IMPORTANT: For the job 'description', ONLY extract the description of the main activities and responsibilities. Do NOT include descriptions of the company itself.
 IMPORTANT: Only include a reference when an actual person's name is explicitly provided. Statements such as 'References are available upon request' are not references and must return an empty 'references' array.
 IMPORTANT: Extract named or substantial academic work, including Master's theses, Bachelor's projects, capstone projects, and academic research projects, into the "projects" array, even when it appears inside an Education section.
+IMPORTANT: For entries in the "websites" array, only place a value in "url" when the CV contains a URL-like address. URLs may be complete or omit the protocol, for example "https://example.com", "www.example.com", "github.com/username", or "linkedin.com/in/username". If no valid URL is present, leave the url field empty.
 Return ONLY a valid JSON object matching this schema exactly:
 {
     "name": "full name", "gender": "...", "nationality": "...", "date_of_birth": "...", "drivers_licence": "...", "short_description": "...", "long_description": "...",

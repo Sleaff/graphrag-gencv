@@ -13,7 +13,7 @@ from loguru import logger
 # Add the parent directory to Python's path so it can find project modules.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from cv_to_rdf import (  # noqa: E402
+from cv_to_rdf import (
     Address,
     CandidateProfile,
     Course,
@@ -27,8 +27,8 @@ from cv_to_rdf import (  # noqa: E402
     Website,
     generate_rdf_and_vectors,
 )
-from generate_cv import tailor_profile_for_job  # noqa: E402
-from query_graph import get_candidate_profile  # noqa: E402
+from generate_cv import tailor_profile_for_job
+from query_graph import get_candidate_profile
 
 SYSTEM_INSTRUCTION = (
     "You are a specialized Graph-to-CV generator. Map the Raw Profile to the Target JSON Schema. "

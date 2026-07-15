@@ -145,7 +145,7 @@ def batch_map_skills_to_esco(raw_skills: list[str]) -> dict:
     return final_mapping
 
 
-def enrich_skills_with_hierarchy(mapped_skills: dict, plus: bool = False) -> dict:
+def enrich_skills_with_hierarchy(mapped_skills: dict, plus: bool = True) -> dict:
     """
     Takes the resolved mapped skills and retrieves their parent categories.
     Uses the skos:broader+ property path to get all levels of parents.
