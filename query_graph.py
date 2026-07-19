@@ -97,7 +97,16 @@ def get_boolean(
 def get_label(graph: Graph, resource, default: str = "") -> str:
     if resource is None:
         return default
-    return get_value(graph, resource, RDFS.label, default or str(resource))
+
+    pref_label = graph.value(resource, SKOS.prefLabel)
+    if pref_label is not None:
+        return str(pref_label)
+
+    rdfs_label = graph.value(resource, RDFS.label)
+    if rdfs_label is not None:
+        return str(rdfs_label)
+
+    return default or str(resource)
 
 
 def get_country_name(graph: Graph, address_uri) -> str:
@@ -136,13 +145,16 @@ def get_skills(graph: Graph, owner_uri) -> list[dict]:
         if not skill_name:
             skill_name = str(skill_uri).rsplit("/", 1)[-1]
 
-        parents = sorted(
-            {
-                get_label(graph, parent_uri)
-                for parent_uri in graph.objects(skill_uri, SKOS.broader)
-                if get_label(graph, parent_uri)
-            }
-        )
+        parents = set()
+
+        for parent_uri in graph.objects(
+            skill_uri,
+            SKOS.broaderTransitive,
+        ):
+            parent_label = get_label(graph, parent_uri)
+            if parent_label:
+                parents.add(parent_label)
+                
         skills.append(
             {
                 "name": skill_name,

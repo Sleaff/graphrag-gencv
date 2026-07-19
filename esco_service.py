@@ -160,7 +160,7 @@ def enrich_skills_with_hierarchy(mapped_skills: dict, plus: bool = True) -> dict
 
         query = f"""
         PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-        SELECT DISTINCT ?parentLabel WHERE {{
+        SELECT DISTINCT ?parentUri ?parentLabel WHERE {{
             <{uri}> skos:broader{"+" if plus else ""} ?parentUri .
             ?parentUri skos:prefLabel ?parentLabel .
             FILTER(LANG(?parentLabel) = "" || LANGMATCHES(LANG(?parentLabel), "en"))
@@ -172,7 +172,11 @@ def enrich_skills_with_hierarchy(mapped_skills: dict, plus: bool = True) -> dict
         try:
             results = sparql.query().convert()
             parents = [
-                b["parentLabel"]["value"] for b in results["results"]["bindings"]
+                {
+                    "uri": binding["parentUri"]["value"],
+                    "label": binding["parentLabel"]["value"],
+                }
+                for binding in results["results"]["bindings"]
             ]
 
             enriched_profile[raw_skill] = {"uri": uri, "parents": parents}

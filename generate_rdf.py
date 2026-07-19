@@ -128,15 +128,32 @@ def add_skill(
         (skill_uri, MY0.skillName, Literal(skill_name, datatype=XSD.string))
     )
 
-    for parent_label in esco_data.get("parents", []):
-        parent_uri = URIRef(
-            f"{DATA}category_{sanitize_uri_string(parent_label)}"
-        )
-        graph.add((skill_uri, SKOS.broader, parent_uri))
-        graph.add((parent_uri, RDF.type, SKOS.Concept))
+    for parent in esco_data.get("parents", []):
+        parent_uri_value = parent.get("uri")
+        parent_label = parent.get("label")
+
+        if not parent_uri_value:
+            continue
+
+        parent_uri = URIRef(parent_uri_value)
+
         graph.add(
-            (parent_uri, RDFS.label, Literal(parent_label, datatype=XSD.string))
+            (
+                skill_uri,
+                SKOS.broaderTransitive,
+                parent_uri,
+            )
         )
+        graph.add((parent_uri, RDF.type, ESCO.Skill))
+
+        if parent_label:
+            graph.add(
+                (
+                    parent_uri,
+                    SKOS.prefLabel,
+                    Literal(parent_label, lang="en"),
+                )
+            )
 
 
 def create_rdf_graph(candidate_data: dict) -> Graph:
