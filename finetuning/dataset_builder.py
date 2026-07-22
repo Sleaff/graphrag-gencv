@@ -340,9 +340,39 @@ async def map_jsonl_to_pydantic(resume_data: dict[str, Any]) -> CandidateProfile
     )
 
 
+def make_json_safe(value: Any) -> Any:
+    """Recursively convert supported Python containers to JSON-safe values.
+
+    Graph query helpers may return sets for fields such as ESCO parent categories.
+    Sets are converted to deterministically sorted lists so generated JSONL files are
+    valid and reproducible across runs.
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+
+    if isinstance(value, dict):
+        return {str(key): make_json_safe(item) for key, item in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [make_json_safe(item) for item in value]
+
+    if isinstance(value, (set, frozenset)):
+        normalized = [make_json_safe(item) for item in value]
+        return sorted(
+            normalized,
+            key=lambda item: json.dumps(
+                item, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        )
+
+    # Keep this strict so new unsupported graph values fail close to their source
+    # instead of being silently converted into misleading strings.
+    raise TypeError(f"Unsupported value for JSON serialization: {type(value).__name__}")
+
+
 def parse_json_object(value: Any, label: str) -> dict[str, Any]:
     if isinstance(value, dict):
-        return value
+        return make_json_safe(value)
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{label} must be a non-empty JSON object")
 
@@ -355,7 +385,7 @@ def parse_json_object(value: Any, label: str) -> dict[str, Any]:
     parsed = json.loads(text)
     if not isinstance(parsed, dict):
         raise TypeError(f"{label} must decode to an object, got {type(parsed).__name__}")
-    return parsed
+    return make_json_safe(parsed)
 
 
 def graph_context_has_content(context: dict[str, Any]) -> bool:
